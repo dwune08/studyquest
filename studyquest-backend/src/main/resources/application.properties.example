@@ -1,0 +1,7 @@
+# application-example.properties
+
+# datasource (oracle)
+spring.datasource.driver-class-name=oracle-driver-class
+spring.datasource.url=jdbc:oracle:thin@ip:port/pdb
+spring.datasource.username=database-user
+spring.datasource.password=database-password
