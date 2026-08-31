@@ -1,4 +1,4 @@
-package com.studyquest.result.dto;
+package com.studyquest.quizresult.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,10 +7,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class StudentResultDTO {
+@NoArgsConstructor
+public class QuizTeacherResultDTO {
     private Long quizNo;
     private String quizQuestion;
-    private int score;
+    private Long submiitedCount;
+
 }

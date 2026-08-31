@@ -1,6 +1,6 @@
-package com.studyquest.result.dto;
+package com.studyquest.quizresult.dto;
 
-import com.studyquest.result.entity.Result;
+import com.studyquest.quizresult.entity.QuizResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,15 +12,15 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResultDTO {
+public class QuizResultDTO {
     private Long resultNo;
     private Long studentNo;
     private Long quizNo;
     private LocalDateTime resultDate;
     private String resultAnswer;
 
-    public static ResultDTO fromEntity(Result result) {
-        ResultDTO dto = new ResultDTO();
+    public static QuizResultDTO fromEntity(QuizResult result) {
+        QuizResultDTO dto = new QuizResultDTO();
 
         dto.setResultNo(result.getResultNo());
         dto.setStudentNo(result.getStudentNo());

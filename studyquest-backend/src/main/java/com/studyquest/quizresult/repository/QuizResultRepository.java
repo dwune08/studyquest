@@ -1,14 +1,14 @@
-package com.studyquest.result.repository;
+package com.studyquest.quizresult.repository;
 
-import com.studyquest.result.entity.Result;
+import com.studyquest.quizresult.entity.QuizResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ResultRepository extends JpaRepository<Result, Long> {
+public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
 
-    List<Result> findByStudentNo(Long studentNo);
-    List<Result> findByQuizNo(Long quizNo);
+    List<QuizResult> findByStudentNo(Long studentNo);
+    List<QuizResult> findByQuizNo(Long quizNo);
 
 //    @Query("""
 //        SELECT r, q
