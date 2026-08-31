@@ -26,7 +26,7 @@ dependencies {
 
 	// DTO와 엔티티 간 객체 매핑을 위한 MapStruct
 	implementation 'org.mapstruct:mapstruct:1.6.3'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
 
@@ -46,7 +46,7 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+//	testImplementation 'org.springframework.security:spring-security-test'
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
