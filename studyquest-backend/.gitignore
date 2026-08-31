@@ -37,3 +37,19 @@ out/
 .vscode/
 
 src/main/resources/application.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# 실행 로그
+*.log
+replay_pid*.log
+
+# Java/Gradle 빌드 결과
+build/
+.gradle/
+out/
+
+# 환경 설정과 비밀정보
+.env

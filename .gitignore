@@ -1,0 +1,15 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# 실행 로그
+*.log
+replay_pid*.log
+
+# Gradle
+.gradle/
+build/
+out/
+
+# 환경변수
+.env
