@@ -35,11 +35,11 @@ public class StudentDTO {
     public static StudentDTO fromEntity(Student student) {
         return new StudentDTO(
                 student.getStudentNo(),
-                student.getStudentEmail(),
-                student.getStudentName(),
+                student.getUser().getUserEmail(),
+                student.getUser().getUserName(),
                 student.getStudentGrade(),
-                student.getStudentBirth(),
-                student.getStudentPhone()
+                student.getUser().getUserBirth(),
+                student.getUser().getUserPhone()
         );
     }
 

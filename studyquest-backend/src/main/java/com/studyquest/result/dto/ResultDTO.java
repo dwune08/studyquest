@@ -7,45 +7,37 @@ import java.time.LocalDateTime;
 public class ResultDTO {
 
     private Long resultNo;
-
     private Long studentNo;
-
     private Long quizNo;
-
     private LocalDateTime resultDate;
-
     private String resultAnswer;
 
     public ResultDTO() {
     }
 
-    public static ResultDTO fromEntity(
-            Result result
+    public ResultDTO(
+            Long resultNo,
+            Long studentNo,
+            Long quizNo,
+            LocalDateTime resultDate,
+            String resultAnswer
     ) {
+        this.resultNo = resultNo;
+        this.studentNo = studentNo;
+        this.quizNo = quizNo;
+        this.resultDate = resultDate;
+        this.resultAnswer = resultAnswer;
+    }
 
-        ResultDTO dto = new ResultDTO();
+    public static ResultDTO fromEntity(Result result) {
 
-        dto.setResultNo(
-                result.getResultNo()
-        );
-
-        dto.setStudentNo(
-                result.getStudentNo()
-        );
-
-        dto.setQuizNo(
-                result.getQuizNo()
-        );
-
-        dto.setResultDate(
-                result.getResultDate()
-        );
-
-        dto.setResultAnswer(
+        return new ResultDTO(
+                result.getResultNo(),
+                result.getStudentNo(),
+                result.getQuizNo(),
+                result.getResultDate(),
                 result.getResultAnswer()
         );
-
-        return dto;
     }
 
     public Long getResultNo() {
@@ -76,9 +68,7 @@ public class ResultDTO {
         return resultDate;
     }
 
-    public void setResultDate(
-            LocalDateTime resultDate
-    ) {
+    public void setResultDate(LocalDateTime resultDate) {
         this.resultDate = resultDate;
     }
 
@@ -86,9 +76,7 @@ public class ResultDTO {
         return resultAnswer;
     }
 
-    public void setResultAnswer(
-            String resultAnswer
-    ) {
+    public void setResultAnswer(String resultAnswer) {
         this.resultAnswer = resultAnswer;
     }
 }

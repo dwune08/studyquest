@@ -1,17 +1,16 @@
-
 package com.studyquest.result.service;
 
-import com.studyquest.quiz.exception.QuizNotFoundException;
 import com.studyquest.quiz.repository.QuizRepository;
 import com.studyquest.result.dto.ResultDTO;
 import com.studyquest.result.dto.ResultRequestDTO;
 import com.studyquest.result.entity.Result;
-import com.studyquest.result.exception.ResultNotFoundException;
 import com.studyquest.result.repository.ResultRepository;
 import com.studyquest.student.repository.StudentRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,17 +19,17 @@ import java.util.List;
 public class ResultService {
 
     private final ResultRepository resultRepository;
-    private final QuizRepository quizRepository;
     private final StudentRepository studentRepository;
+    private final QuizRepository quizRepository;
 
     public ResultService(
             ResultRepository resultRepository,
-            QuizRepository quizRepository,
-            StudentRepository studentRepository
+            StudentRepository studentRepository,
+            QuizRepository quizRepository
     ) {
         this.resultRepository = resultRepository;
-        this.quizRepository = quizRepository;
         this.studentRepository = studentRepository;
+        this.quizRepository = quizRepository;
     }
 
     /*
@@ -44,7 +43,8 @@ public class ResultService {
         if (!studentRepository.existsById(
                 requestDTO.getStudentNo()
         )) {
-            throw new IllegalArgumentException(
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
                     "학생을 찾을 수 없습니다. studentNo = "
                             + requestDTO.getStudentNo()
             );
@@ -53,8 +53,21 @@ public class ResultService {
         if (!quizRepository.existsById(
                 requestDTO.getQuizNo()
         )) {
-            throw new QuizNotFoundException(
-                    requestDTO.getQuizNo()
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "퀴즈를 찾을 수 없습니다. quizNo = "
+                            + requestDTO.getQuizNo()
+            );
+        }
+
+        if (requestDTO.getResultAnswer() == null
+                || requestDTO.getResultAnswer()
+                .trim()
+                .isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "제출 답안이 필요합니다."
             );
         }
 
@@ -73,19 +86,20 @@ public class ResultService {
     }
 
     /*
-     * 결과 한 개 조회
+     * 결과 하나 조회
      */
     public ResultDTO getResult(
             Long resultNo
     ) {
 
         Result result =
-                resultRepository
-                        .findById(resultNo)
+                resultRepository.findById(resultNo)
                         .orElseThrow(
                                 () ->
-                                        new ResultNotFoundException(
-                                                resultNo
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND,
+                                                "결과를 찾을 수 없습니다. resultNo = "
+                                                        + resultNo
                                         )
                         );
 
@@ -93,7 +107,7 @@ public class ResultService {
     }
 
     /*
-     * 학생별 결과 조회
+     * 특정 학생의 전체 결과 조회
      */
     public List<ResultDTO> getStudentResults(
             Long studentNo
@@ -109,7 +123,7 @@ public class ResultService {
     }
 
     /*
-     * 퀴즈별 학생 결과 조회
+     * 특정 퀴즈의 전체 학생 결과 조회
      */
     public List<ResultDTO> getQuizResults(
             Long quizNo

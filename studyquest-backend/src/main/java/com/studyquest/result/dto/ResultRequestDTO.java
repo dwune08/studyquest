@@ -3,9 +3,7 @@ package com.studyquest.result.dto;
 public class ResultRequestDTO {
 
     private Long studentNo;
-
     private Long quizNo;
-
     private String resultAnswer;
 
     public ResultRequestDTO() {
@@ -31,9 +29,7 @@ public class ResultRequestDTO {
         return resultAnswer;
     }
 
-    public void setResultAnswer(
-            String resultAnswer
-    ) {
+    public void setResultAnswer(String resultAnswer) {
         this.resultAnswer = resultAnswer;
     }
 }
