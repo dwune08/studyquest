@@ -57,13 +57,22 @@ public class CustomSecurityConfig {
                         // 1. 회원가입 및 인증 관련 Endpoint 전용 허용
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/users/login", "/users/refresh").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/users/**").authenticated()        // PATCH 요청은 인증 필요
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()       // DELETE 요청은 인증 필요
-                        // 2. Swagger UI / API 문서 경로 허용
+                        .requestMatchers(HttpMethod.PATCH, "/users/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
+
+                        // 2. 퀴즈(Quiz) 관련 역할 기반 접근 제어 (Role-based Authorization)
+                        .requestMatchers(HttpMethod.GET, "/quizzes/*/student").hasRole("STUDENT") // 학생 전용
+                        .requestMatchers(HttpMethod.POST, "/quizzes").hasRole("TEACHER")          // 선생님 전용 (퀴즈 생성)
+                        .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")     // 선생님 전용 (퀴즈 수정)
+                        .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")    // 선생님 전용 (퀴즈 삭제)
+
+                        // 3. Swagger UI / API 문서 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // 3. OPTIONS Preflight 요청 허용
+
+                        // 4. OPTIONS Preflight 요청 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 4. 나머지 모든 요청은 인증 필요
+
+                        // 5. 나머지 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
 

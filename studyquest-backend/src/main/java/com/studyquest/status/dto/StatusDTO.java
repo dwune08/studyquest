@@ -1,80 +1,39 @@
 package com.studyquest.status.dto;
 
 import com.studyquest.status.entity.Status;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StatusDTO {
 
     private Long studentNo;
-
     private Integer statusLevel;
     private Integer statusAttack;
     private Integer statusWisdom;
     private Integer statusSpeed;
     private Integer statusExp;
-
     private Integer nextLevelExp;
 
-    public StatusDTO() {
-    }
+    // Entity -> DTO 변환 정적 팩토리 메서드
+    public static StatusDTO fromEntity(Status status) {
+        if (status == null) {
+            return null;
+        }
 
-    public StatusDTO(
-            Long studentNo,
-            Integer statusLevel,
-            Integer statusAttack,
-            Integer statusWisdom,
-            Integer statusSpeed,
-            Integer statusExp
-    ) {
-        this.studentNo = studentNo;
-        this.statusLevel = statusLevel;
-        this.statusAttack = statusAttack;
-        this.statusWisdom = statusWisdom;
-        this.statusSpeed = statusSpeed;
-        this.statusExp = statusExp;
-
-        this.nextLevelExp =
-                statusLevel * 100;
-    }
-
-    public static StatusDTO fromEntity(
-            Status status
-    ) {
-
-        return new StatusDTO(
-                status.getStudentNo(),
-                status.getStatusLevel(),
-                status.getStatusAttack(),
-                status.getStatusWisdom(),
-                status.getStatusSpeed(),
-                status.getStatusExp()
-        );
-    }
-
-    public Long getStudentNo() {
-        return studentNo;
-    }
-
-    public Integer getStatusLevel() {
-        return statusLevel;
-    }
-
-    public Integer getStatusAttack() {
-        return statusAttack;
-    }
-
-    public Integer getStatusWisdom() {
-        return statusWisdom;
-    }
-
-    public Integer getStatusSpeed() {
-        return statusSpeed;
-    }
-
-    public Integer getStatusExp() {
-        return statusExp;
-    }
-
-    public Integer getNextLevelExp() {
-        return nextLevelExp;
+        return StatusDTO.builder()
+                .studentNo(status.getStudentNo())
+                .statusLevel(status.getStatusLevel())
+                .statusAttack(status.getStatusAttack())
+                .statusWisdom(status.getStatusWisdom())
+                .statusSpeed(status.getStatusSpeed())
+                .statusExp(status.getStatusExp())
+                .nextLevelExp(status.getStatusLevel() * 100) // 다음 레벨 필요 경험치 자동 계산
+                .build();
     }
 }

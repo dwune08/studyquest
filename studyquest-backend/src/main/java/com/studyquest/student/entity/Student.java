@@ -1,4 +1,5 @@
 package com.studyquest.student.entity;
+import com.studyquest.status.entity.Status;
 import com.studyquest.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,6 +30,10 @@ public class Student {
 
     @Column(name = "STUDENT_GRADE", nullable = false)
     private Integer studentGrade;
+
+    // STATUS 테이블과의 1:1 양방향 CASCADE 연관관계
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Status status;
 
     @Builder
     public Student(User user, Integer studentGrade) {
