@@ -1,4 +1,5 @@
 package com.studyquest.teacher.entity;
+
 import com.studyquest.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -22,7 +23,7 @@ public class Teacher {
     @Column(name = "TEACHER_NO")
     private Long teacherNo;
 
-    // USER 테이블과의 1:1 연관관계
+    // USER 테이블과의 1:1 단방향 연관관계
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_NO", nullable = false, unique = true)
     private User user;

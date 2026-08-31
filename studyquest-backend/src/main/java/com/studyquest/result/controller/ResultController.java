@@ -1,112 +1,55 @@
 package com.studyquest.result.controller;
 
+import com.studyquest.dto.PageRequestDTO;
+import com.studyquest.dto.PageResponseDTO;
 import com.studyquest.result.dto.ResultDTO;
-import com.studyquest.result.dto.ResultRequestDTO;
 import com.studyquest.result.service.ResultService;
-
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/results")
+@RequiredArgsConstructor
 public class ResultController {
 
     private final ResultService resultService;
 
-    public ResultController(
-            ResultService resultService
+    // 내 전체 퀴즈 제출 이력 조회 (학생 전용, 페이징)
+    // 요청 예시: GET /results/me?page=1&size=10
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PageResponseDTO<ResultDTO>> getMyResults(
+            @AuthenticationPrincipal Long loginStudentNo,
+            PageRequestDTO pageRequestDTO
     ) {
-        this.resultService = resultService;
+        PageResponseDTO<ResultDTO> response = resultService.getMyResults(loginStudentNo, pageRequestDTO);
+        return ResponseEntity.ok(response);
     }
 
-    /*
-     * 학생 답안 제출
-     *
-     * POST /results
-     */
-    @PostMapping
-    public ResponseEntity<ResultDTO> submitResult(
-            @RequestBody ResultRequestDTO requestDTO
+    // 내 특정 퀴즈 제출 결과 단건 조회 (학생 전용)
+    // 요청 예시: GET /results/me/quiz?quizNo=1
+    @GetMapping("/me/quiz")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ResultDTO> getMyResultByQuiz(
+            @AuthenticationPrincipal Long loginStudentNo,
+            @RequestParam("quizNo") Long quizNo
     ) {
-
-        ResultDTO resultDTO =
-                resultService.submitResult(
-                        requestDTO
-                );
-
-        return ResponseEntity.ok(
-                resultDTO
-        );
+        ResultDTO resultDTO = resultService.getMyResultByQuiz(loginStudentNo, quizNo);
+        return ResponseEntity.ok(resultDTO);
     }
 
-    /*
-     * 결과 한 개 상세 조회
-     *
-     * GET /results/1
-     */
-    @GetMapping("/{resultNo}")
-    public ResponseEntity<ResultDTO> getResult(
-            @PathVariable Long resultNo
+    // 특정 퀴즈의 전체 학생 제출 결과 목록 조회 (선생님 전용, 페이징)
+    // 요청 예시: GET /results/quiz/1?page=1&size=10
+    @GetMapping("/quiz/{quizNo}")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<PageResponseDTO<ResultDTO>> getResultsByQuiz(
+            @PathVariable("quizNo") Long quizNo,
+            PageRequestDTO pageRequestDTO
     ) {
-
-        return ResponseEntity.ok(
-                resultService.getResult(
-                        resultNo
-                )
-        );
-    }
-
-    /*
-     * 학생별 결과
-     *
-     * GET /results?studentNo=1
-     *
-     * 퀴즈별 결과
-     *
-     * GET /results?quizNo=1
-     */
-    @GetMapping
-    public ResponseEntity<List<ResultDTO>> getResults(
-            @RequestParam(required = false)
-            Long studentNo,
-
-            @RequestParam(required = false)
-            Long quizNo
-    ) {
-
-        if (studentNo != null && quizNo != null) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "studentNo와 quizNo 중 하나만 입력해 주세요."
-            );
-        }
-
-        if (studentNo != null) {
-
-            return ResponseEntity.ok(
-                    resultService.getStudentResults(
-                            studentNo
-                    )
-            );
-        }
-
-        if (quizNo != null) {
-
-            return ResponseEntity.ok(
-                    resultService.getQuizResults(
-                            quizNo
-                    )
-            );
-        }
-
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "studentNo 또는 quizNo가 필요합니다."
-        );
+        PageResponseDTO<ResultDTO> response = resultService.getResultsByQuiz(quizNo, pageRequestDTO);
+        return ResponseEntity.ok(response);
     }
 }

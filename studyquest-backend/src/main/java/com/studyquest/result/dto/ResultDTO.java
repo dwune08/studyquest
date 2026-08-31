@@ -1,82 +1,39 @@
 package com.studyquest.result.dto;
 
 import com.studyquest.result.entity.Result;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ResultDTO {
 
     private Long resultNo;
     private Long studentNo;
     private Long quizNo;
-    private LocalDateTime resultDate;
     private String resultAnswer;
+    private Boolean isCorrect;
+    private LocalDateTime resultDate;
 
-    public ResultDTO() {
-    }
-
-    public ResultDTO(
-            Long resultNo,
-            Long studentNo,
-            Long quizNo,
-            LocalDateTime resultDate,
-            String resultAnswer
-    ) {
-        this.resultNo = resultNo;
-        this.studentNo = studentNo;
-        this.quizNo = quizNo;
-        this.resultDate = resultDate;
-        this.resultAnswer = resultAnswer;
-    }
-
+    // Entity -> DTO 변환 정적 팩토리 메서드
     public static ResultDTO fromEntity(Result result) {
+        if (result == null) {
+            return null;
+        }
 
-        return new ResultDTO(
-                result.getResultNo(),
-                result.getStudentNo(),
-                result.getQuizNo(),
-                result.getResultDate(),
-                result.getResultAnswer()
-        );
-    }
-
-    public Long getResultNo() {
-        return resultNo;
-    }
-
-    public void setResultNo(Long resultNo) {
-        this.resultNo = resultNo;
-    }
-
-    public Long getStudentNo() {
-        return studentNo;
-    }
-
-    public void setStudentNo(Long studentNo) {
-        this.studentNo = studentNo;
-    }
-
-    public Long getQuizNo() {
-        return quizNo;
-    }
-
-    public void setQuizNo(Long quizNo) {
-        this.quizNo = quizNo;
-    }
-
-    public LocalDateTime getResultDate() {
-        return resultDate;
-    }
-
-    public void setResultDate(LocalDateTime resultDate) {
-        this.resultDate = resultDate;
-    }
-
-    public String getResultAnswer() {
-        return resultAnswer;
-    }
-
-    public void setResultAnswer(String resultAnswer) {
-        this.resultAnswer = resultAnswer;
+        return ResultDTO.builder()
+                .resultNo(result.getResultNo())
+                .studentNo(result.getStudent() != null ? result.getStudent().getStudentNo() : null)
+                .quizNo(result.getQuiz() != null ? result.getQuiz().getQuizNo() : null)
+                .resultAnswer(result.getResultAnswer())
+                .isCorrect(result.getIsCorrect())
+                .resultDate(result.getResultDate())
+                .build();
     }
 }

@@ -42,7 +42,7 @@ public class AuthController {
 
         Map<String, Object> claims = userDTO.getClaims();
         String accessToken = JWTUtil.generateToken(claims, 10);          // Access Token: 10분
-        String refreshToken = JWTUtil.generateToken(claims, 60 * 24);     // Refresh Token: 24시간
+        String refreshToken = JWTUtil.generateToken(claims, 60 * 2);     // Refresh Token: 24시간
 
         Map<String, Object> result = new HashMap<>(claims);
         result.put("accessToken", accessToken);
