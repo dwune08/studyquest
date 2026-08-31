@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuizTeacherResultDTO {
-    private Long quizNo;
-    private String quizQuestion;
-    private Long submiitedCount;
 
+    private Long quizNo;
+    private String quizTitle;
+    private Long submissionCount;
 }

@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QuizStudentResultDTO {
     private Long quizNo;
-    private String quizQuestion;
+    private String quizTitle;
     private int score;
 }
