@@ -53,14 +53,12 @@ const root = createBrowserRouter([
    },
    // 선생님 관련 페이지 묶음
    {
-      path: "/teacher/:no",
+      path: "/teacher",
       HydrateFallback: () => <div>Loading...</div>,
       lazy: async () => {
          const { default: Component } = await import("../pages/teacher/TeacherPage");
          return { Component };
       },
-
-      // teacher 하위 라우팅 설정
       children: teacherRouter(),
    },
    // 학생 페이지
