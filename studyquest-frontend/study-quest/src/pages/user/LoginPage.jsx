@@ -1,5 +1,4 @@
 import { useState } from "react";
-import BasicLayout from "../../layouts/BasicLayout";
 
 const LoginPage = () => {
   const [isLoginTab, setIsLoginTab] = useState(false);
