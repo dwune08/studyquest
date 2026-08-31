@@ -4,6 +4,6 @@
     "axios": "^1.20.0",
     "react-cookie": "^8.1.2",
     "react-redux": "^9.3.0",
-    "react-router": "^8.3.0"
+    "react-router": "^8.3.1"
   }
 }
