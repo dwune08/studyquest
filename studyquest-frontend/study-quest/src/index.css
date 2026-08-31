@@ -1,4 +1,4 @@
-:root {
+/*:root {
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -108,4 +108,140 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}*/
+
+/*body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #dddddd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.mypage-wrapper {
+  width: 95%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background-color: #eeeeee;
+  padding: 30px;
+}
+
+.top-header {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 15px 10px;
+}
+
+.brand {
+  font-weight: bold;
+}
+
+.student-level {
+  padding-right: 20px;
+  border-right: 1px solid #999;
+}
+
+.exp-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.exp-bar {
+  width: 250px;
+  height: 30px;
+  background-color: white;
+}
+
+.exp-fill {
+  height: 100%;
+  background-color: #20c997;
+}
+
+.logout-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.main-panel {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 50px;
+  padding: 40px;
+  background-color: #1f2b3a;
+}
+
+.left-area,
+.right-area {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.profile-card {
+  width: 270px;
+  height: 300px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image {
+  font-size: 100px;
+}
+
+.attendance-card {
+  width: 270px;
+  background-color: white;
+  padding: 20px;
+}
+
+.status-card {
+  background-color: white;
+  padding: 30px;
+  width: 100%;
+}
+
+.status-card h2,
+.ranking-card h2 {
+  margin-top: 0;
+}
+
+.ranking-card {
+  background-color: white;
+  padding: 25px;
+  width: 320px;
+  align-self: flex-end;
+}
+
+.bottom-menu {
+  display: flex;
+  justify-content: space-around;
+  padding: 25px;
+}
+
+.bottom-menu button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}*/
+
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #020617;
 }
