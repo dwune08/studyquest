@@ -1,5 +1,6 @@
 package com.studyquest.result.service;
 
+import com.studyquest.result.dto.GradeSummaryDTO;
 import com.studyquest.result.dto.StudentScoreDTO;
 import com.studyquest.result.repository.ResultRepository;
 import com.studyquest.teacher.entity.Teacher;
@@ -86,5 +87,10 @@ public class TeacherResultServiceImpl implements TeacherResultService {
                 .totalCorrectCount(correctCount)
                 .totalAccuracyRate(totalAccuracy)
                 .build();
+    }
+
+    private Teacher getTeacherByUserNo(Long userNo) {
+        return teacherRepository.findByUser_UserNo(userNo)
+                .orElseThrow(() -> new IllegalArgumentException("선생님 정보를 찾을 수 없습니다. userNo = " + userNo));
     }
 }

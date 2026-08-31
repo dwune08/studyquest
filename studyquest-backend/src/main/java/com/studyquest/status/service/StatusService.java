@@ -1,6 +1,7 @@
 package com.studyquest.status.service;
 
 import com.studyquest.status.dto.StatusDTO;
+import com.studyquest.status.dto.StudentMyPageDTO;
 
 public interface StatusService {
 
@@ -9,4 +10,6 @@ public interface StatusService {
 
     // 경험치 부여
     StatusDTO addExp(Long studentNo, int exp);
+
+    StudentMyPageDTO getStudentMyPage(Long loginStudentNo);
 }

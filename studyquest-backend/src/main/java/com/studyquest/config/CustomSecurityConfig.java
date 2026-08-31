@@ -41,47 +41,45 @@ public class CustomSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // CSRF 및 Form Login, HTTP Basic 비활성화 (Stateless REST API)
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-
-                // 세션 정책: STATELESS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // URL 경로별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 회원가입 및 인증 관련 Endpoint 전용 허용
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers("/users/login", "/users/refresh").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/users/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
+                        // 1. 회원 및 인증 관련 (/users, /users/login)
+                        .requestMatchers(HttpMethod.POST, "/users", "/users/login", "/users/refresh").permitAll()
 
-                        // 2. 퀴즈(Quiz) 관련 역할 기반 접근 제어 (Role-based Authorization)
-                        .requestMatchers(HttpMethod.GET, "/quizzes/*/student").hasRole("STUDENT") // 학생 전용
-                        .requestMatchers(HttpMethod.POST, "/quizzes").hasRole("TEACHER")          // 선생님 전용 (퀴즈 생성)
-                        .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")     // 선생님 전용 (퀴즈 수정)
-                        .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")    // 선생님 전용 (퀴즈 삭제)
+                        // 2. 랭크 페이지 누구나 접근 허용 (/ranks)
+                        .requestMatchers(HttpMethod.GET, "/ranks/**").permitAll()
 
-                        // 3. Swagger UI / API 문서 경로 허용
+                        // 3. 마이페이지용 스테이터스, 이벤트(출석 체크) 관련 API - 학생 전용 권한 설정 (GET, POST 등 전체)
+                        .requestMatchers("/status/**", "/event/**").hasRole("STUDENT")
+
+                        // 4. 선생님 전용 API (퀴즈 생성/수정/삭제)
+                        .requestMatchers(HttpMethod.POST, "/quizzes").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")
+
+                        // 5. 학생/선생님 공용 및 기타 조회 API
+                        .requestMatchers(HttpMethod.GET, "/quizzes/**", "/results/**", "/teachers/**").authenticated()
+
+                        // 6. 결과 제출 (/results)
+                        .requestMatchers(HttpMethod.POST, "/results").hasRole("STUDENT")
+
+                        // 7. Swagger UI 및 Options preflight
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-
-                        // 4. OPTIONS Preflight 요청 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 5. 나머지 모든 요청은 인증 필요
+                        // 8. 기타 요청 인증 필요
                         .anyRequest().authenticated()
                 )
 
-                // 예외 처리 핸들러 설정
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(accessDeniedHandler)
                 )
 
-                // JWT 필터 배치
                 .addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -90,8 +88,6 @@ public class CustomSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 출처(Origin), 메서드, 헤더 허용 설정
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));

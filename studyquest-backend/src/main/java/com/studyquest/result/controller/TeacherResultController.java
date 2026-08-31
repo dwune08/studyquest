@@ -14,16 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/teacher/{teacherNo}")
+@RequestMapping("/teachers/me")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('TEACHER')")
 public class TeacherResultController {
 
     private final TeacherResultService teacherResultService;
 
-    // 1. 로그인한 선생님 담당 학년의 학생별 성적/정답률 목록 조회
-    // 요청: GET /teacher/results/students
+    // 1. [학생 성적] 담당 학년 학생별 풀이 현황 및 점수 목록 조회
     @GetMapping("/students")
-    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<List<StudentScoreDTO>> getStudentScores(
             @AuthenticationPrincipal Long loginTeacherNo
     ) {
@@ -31,10 +30,8 @@ public class TeacherResultController {
         return ResponseEntity.ok(response);
     }
 
-    // 2. 로그인한 선생님 담당 학년 전체 요약 통계 조회 (총 풀이 수, 정답률 등)
-    // 요청: GET /teacher/results/summary
+    // 2. [성적 통계] 담당 학년 전체 성적 요약 및 리포트 통계 조회
     @GetMapping("/summary")
-    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<GradeSummaryDTO> getGradeSummary(
             @AuthenticationPrincipal Long loginTeacherNo
     ) {

@@ -46,10 +46,12 @@ public class QuizSolveServiceImpl implements QuizSolveService {
         Student student = studentRepository.findById(loginStudentNo)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. studentNo = " + loginStudentNo));
 
-        // 3. 정답 채점 (Integer/String 변환 비교)
-        String submittedStr = String.valueOf(requestDTO.getSubmittedAnswer());
-        String answerStr = String.valueOf(quiz.getQuizAnswer());
-        boolean isCorrect = answerStr.equals(submittedStr);
+        // 3. 정답 채점 (Null Guard + 대소문자/공백 무시 비교)
+        String submittedStr = requestDTO.getSubmittedAnswer() != null ? String.valueOf(requestDTO.getSubmittedAnswer()).trim() : "";
+        String answerStr = quiz.getQuizAnswer() != null ? String.valueOf(quiz.getQuizAnswer()).trim() : "";
+
+        // 대소문자 구분 없이 비교 (필요 시 equals로 변경 가능)
+        boolean isCorrect = answerStr.equalsIgnoreCase(submittedStr);
 
         // 4. Result 엔티티 생성 및 DB 저장
         Result result = Result.builder()

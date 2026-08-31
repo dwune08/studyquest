@@ -1,6 +1,7 @@
 package com.studyquest.status.controller;
 
 import com.studyquest.status.dto.StatusDTO;
+import com.studyquest.status.dto.StudentMyPageDTO;
 import com.studyquest.status.service.StatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,17 @@ public class StatusController {
 
     private final StatusService statusService;
 
-    // 내 스탯 조회 (학생 본인 전용)
+    // 내 프로필 및 스탯 조회 (학생 본인 전용)
+    // 요청: GET /status/me
+    // 학생 마이페이지 종합 정보 조회 (학생 기본 정보 + 스탯 + 최근 퀴즈 결과)
+    // 요청: GET /status/me
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<StatusDTO> getMyStatus(
+    public ResponseEntity<StudentMyPageDTO> getMyPage(
             @AuthenticationPrincipal Long loginStudentNo
     ) {
-        StatusDTO statusDTO = statusService.getStatus(loginStudentNo);
-        return ResponseEntity.ok(statusDTO);
+        // Service 단에서 Student + Status + Result(Top 5) 조인/조회 후 DTO 빌드
+        StudentMyPageDTO response = statusService.getStudentMyPage(loginStudentNo);
+        return ResponseEntity.ok(response);
     }
 }

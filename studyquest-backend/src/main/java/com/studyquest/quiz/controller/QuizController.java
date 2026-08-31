@@ -2,14 +2,13 @@ package com.studyquest.quiz.controller;
 
 import com.studyquest.quiz.dto.QuizDTO;
 import com.studyquest.quiz.dto.QuizRequestDTO;
-import com.studyquest.quiz.dto.StudentQuizDTO;
-import com.studyquest.quiz.service.QuizService; // 인터페이스로 변경
+import com.studyquest.quiz.service.QuizService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal; // 로그인 정보 주입용
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizController {
 
-    private final QuizService quizService; // 인터페이스 타입으로 주입
+    private final QuizService quizService;
 
-    // 퀴즈 등록 (선생님 전용)
+    // 1. 퀴즈 등록 (선생님 전용)
+    // 요청: POST /quizzes
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<QuizDTO> createQuiz(
@@ -31,54 +31,48 @@ public class QuizController {
         return ResponseEntity.status(HttpStatus.CREATED).body(quizDTO);
     }
 
-    // 선생님별 퀴즈 목록 조회 (선생님 전용)
-    @GetMapping
+    // 2. 선생님별 퀴즈 목록 조회 - 퀴즈 관리 메뉴용 (선생님 전용)
+    // 요청: GET /quizzes?teacherNo=1
+    @GetMapping(params = "teacherNo")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<List<QuizDTO>> getQuizList(
-            @RequestParam Long teacherNo
+    public ResponseEntity<List<QuizDTO>> getQuizListByTeacher(
+            @RequestParam("teacherNo") Long teacherNo
     ) {
         List<QuizDTO> quizList = quizService.getQuizList(teacherNo);
         return ResponseEntity.ok(quizList);
     }
 
-    // 퀴즈 상세 조회 (선생님 전용 - 정답 포함)
+    // 3. 퀴즈 상세 조회 (선생님/학생 공통 규격 통일)
+    // 요청: GET /quizzes/{quizNo}
     @GetMapping("/{quizNo}")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
     public ResponseEntity<QuizDTO> getQuiz(
-            @PathVariable Long quizNo
+            @PathVariable("quizNo") Long quizNo
     ) {
-        QuizDTO quizDTO = quizService.getQuiz(quizNo);
+        QuizDTO quizDTO = quizService.getQuiz(quizNo); // 기존 메서드 호출
         return ResponseEntity.ok(quizDTO);
     }
 
-    // 퀴즈 상세 조회 (학생 전용 - 정답 미포함)
-    @GetMapping("/{quizNo}/student")
-    @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<StudentQuizDTO> getStudentQuiz(
-            @PathVariable Long quizNo
-    ) {
-        StudentQuizDTO studentQuizDTO = quizService.getStudentQuiz(quizNo);
-        return ResponseEntity.ok(studentQuizDTO);
-    }
-
-    // 퀴즈 수정 (선생님 전용)
+    // 4. 퀴즈 수정 (선생님 전용)
+    // 요청: PATCH /quizzes/{quizNo}
     @PatchMapping("/{quizNo}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<QuizDTO> updateQuiz(
-            @PathVariable Long quizNo,
+            @PathVariable("quizNo") Long quizNo,
             @Valid @RequestBody QuizRequestDTO requestDTO,
-            @AuthenticationPrincipal Long loginTeacherNo // JWT 등에서 추출한 현재 로그인한 사용자 번호
+            @AuthenticationPrincipal Long loginTeacherNo
     ) {
         QuizDTO quizDTO = quizService.updateQuiz(quizNo, requestDTO, loginTeacherNo);
         return ResponseEntity.ok(quizDTO);
     }
 
-    // 퀴즈 삭제 (선생님 전용)
+    // 5. 퀴즈 삭제 (선생님 전용)
+    // 요청: DELETE /quizzes/{quizNo}
     @DeleteMapping("/{quizNo}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<Void> deleteQuiz(
-            @PathVariable Long quizNo,
-            @AuthenticationPrincipal Long loginTeacherNo // JWT 등에서 추출한 현재 로그인한 사용자 번호
+            @PathVariable("quizNo") Long quizNo,
+            @AuthenticationPrincipal Long loginTeacherNo
     ) {
         quizService.deleteQuiz(quizNo, loginTeacherNo);
         return ResponseEntity.noContent().build();

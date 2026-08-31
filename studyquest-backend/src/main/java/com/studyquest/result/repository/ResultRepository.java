@@ -45,4 +45,6 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
         WHERE r.student.studentGrade = :grade
     """)
     Object[] findGradeTotalAccuracy(@Param("grade") Integer grade);
+
+    List<Result> findTop5ByStudent_StudentNoOrderByResultDateDesc(Long studentNo);
 }

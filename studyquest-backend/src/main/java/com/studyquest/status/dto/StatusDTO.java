@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class StatusDTO {
 
     private Long studentNo;
+    private String studentName;   // 마이페이지 표시용 학생 이름
+    private Integer studentGrade;  // 마이페이지 표시용 학년
     private Integer statusLevel;
     private Integer statusAttack;
     private Integer statusWisdom;
@@ -26,8 +28,19 @@ public class StatusDTO {
             return null;
         }
 
+        // Student 및 User 연관관계 안전 참조
+        String name = (status.getStudent() != null && status.getStudent().getUser() != null)
+                ? status.getStudent().getUser().getUserName()
+                : null;
+
+        Integer grade = (status.getStudent() != null)
+                ? status.getStudent().getStudentGrade()
+                : null;
+
         return StatusDTO.builder()
                 .studentNo(status.getStudentNo())
+                .studentName(name)
+                .studentGrade(grade)
                 .statusLevel(status.getStatusLevel())
                 .statusAttack(status.getStatusAttack())
                 .statusWisdom(status.getStatusWisdom())
