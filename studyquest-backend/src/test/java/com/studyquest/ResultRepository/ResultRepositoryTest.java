@@ -1,11 +1,10 @@
 package com.studyquest.ResultRepository;
 
-import com.studyquest.result.entity.ResultEntity;
+import com.studyquest.result.entity.Result;
 import com.studyquest.result.repository.ResultRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.AutoConfigureDataJpa;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 
@@ -20,7 +19,7 @@ public class ResultRepositoryTest {
 
     @Test
     void findByStudentNoTest() {
-        List<ResultEntity> resultList = repository.findByStudentNo(1L);
+        List<Result> resultList = repository.findByStudentNo(1L);
         resultList.forEach(result -> {
             log.info("result = {}", result);
         });
@@ -33,7 +32,7 @@ public class ResultRepositoryTest {
 
         for (Object[] row : list) {
 
-            ResultEntity result = (ResultEntity) row[0];
+            Result result = (Result) row[0];
             Quiz quiz = (Quiz) row[1];
 
             System.out.println(result.getQuizNo());

@@ -1,6 +1,6 @@
 package com.studyquest.result.dto;
 
-import com.studyquest.result.entity.ResultEntity;
+import com.studyquest.result.entity.Result;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class ResultDTO {
     private LocalDateTime resultDate;
     private String resultAnswer;
 
-    public static ResultDTO fromEntity(ResultEntity result) {
+    public static ResultDTO fromEntity(Result result) {
         ResultDTO dto = new ResultDTO();
 
         dto.setResultNo(result.getResultNo());

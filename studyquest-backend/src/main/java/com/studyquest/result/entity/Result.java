@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class ResultEntity {
+public class Result {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RESULT_NO")
@@ -24,9 +25,10 @@ public class ResultEntity {
     @Column(name = "QUIZ_NO", nullable = false)
     private Long quizNo;
 
-    @Column(name = "RESULT_DATE")
+    @CreationTimestamp
+    @Column(name = "RESULT_DATE", nullable = false, updatable = false)
     private LocalDateTime resultDate;
 
-    @Column(name = "RESULT_ANSWER")
+    @Column(name = "RESULT_ANSWER", nullable = false)
     private String resultAnswer;
 }
