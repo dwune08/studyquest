@@ -19,6 +19,9 @@
 export default QuizListPage;*/
 
 import { useNavigate } from "react-router-dom";
+import quizData from "../../data/quizData";
+import "../../styles/quiz.css";
+
 
 const QuizListPage = () => {
   const navigate = useNavigate();
@@ -88,7 +91,7 @@ const QuizListPage = () => {
               <button
                 key={quiz.quizNo}
                 onClick={() =>
-                  navigate(`/quiz/${quiz.quizNo}`)
+                  navigate(`/quizzes/${quiz.quizNo}`)
                 }
                 className="flex w-full items-center justify-between rounded-2xl border border-slate-700 bg-[#081225] px-6 py-5 text-left transition hover:border-blue-500 hover:bg-[#0b1730]"
               >

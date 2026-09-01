@@ -14,10 +14,10 @@ export const getStudent = async (studentNo) => {
     .replace(/^"|"$/g, "")
     .trim();
 
-  console.log(
+  /*console.log(
     "학생 API 토큰 확인:",
     accessToken.substring(0, 15) + "..."
-  );
+  );*/
 
   const response = await axios.get(
     `${API_SERVER_HOST}/students/${studentNo}`,

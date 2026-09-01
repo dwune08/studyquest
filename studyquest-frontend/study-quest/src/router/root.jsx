@@ -1,8 +1,7 @@
-import { createBrowserRouter } from "react-router-dom";
-import quizRouter from "./quizRouter";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+//import quizRouter from "./quizRouter";
 import teacherRouter from "./teacherRouter";
-
-import StudentMyPage from "../pages/student/StudentMyPage";
+//import StudentMyPage from "../pages/student/StudentMyPage";
 import QuizListPage from "../pages/quiz/QuizListPage";
 import QuizPlayPage from "../pages/quiz/QuizPlayPage";
 import QuizResultPage from "../pages/quiz/QuizResultPage";
@@ -49,7 +48,7 @@ const root = createBrowserRouter([
   },
 
   // 퀴즈 관련 페이지 묶음
-  {
+  /*{
     path: "/quizzes",
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
@@ -57,7 +56,7 @@ const root = createBrowserRouter([
       return { Component };
     },
     children: quizRouter(),
-  },
+  },*/
 
   // 선생님 관련 페이지 묶음
   {
@@ -75,7 +74,7 @@ const root = createBrowserRouter([
     path: "/student/:no",
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
-      const { default: Component } = await import("../pages/StudentPage");
+      const { default: Component } = await import("../pages/student/StudentMyPage");
       return { Component };
     },
   },
@@ -103,11 +102,12 @@ const root = createBrowserRouter([
   // 학생 마이페이지
   {
     path: "/mypage",
-    element: <StudentMyPage />,
+    element: ( <Navigate to="/student/5" replace />
+    ),
   },
 
   // 퀴즈 목록
-  {
+  /*{
     path: "/quiz",
     element: <QuizListPage />,
   },
@@ -122,7 +122,26 @@ const root = createBrowserRouter([
   {
     path: "/quiz/:quizNo/result",
     element: <QuizResultPage />,
-  },
+  },*/
+
+  {
+  path: "/quizzes",
+  element: <QuizListPage />,
+},
+
+// 퀴즈 결과
+{
+  path: "/quizzes/:quizNo/result",
+  element: <QuizResultPage />,
+},
+
+// 퀴즈 풀이
+{
+  path: "/quizzes/:quizNo",
+  element: <QuizPlayPage />,
+},
 ]);
+
+
 
 export default root;

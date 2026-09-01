@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStudent } from "../../api/studentApi";
 import { getStatus } from "../../api/statusApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const StudentMyPage = () => {
   const [student, setStudent] = useState(null);
@@ -9,7 +9,8 @@ const StudentMyPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const studentNo = 5;
+  const { no } = useParams();
+  const studentNo = Number(no);
 
   useEffect(() => {
     const loadData = async () => {
@@ -320,7 +321,7 @@ const StudentMyPage = () => {
           </button>
 
           <button
-            type="button" onClick={() => navigate("/quiz")}
+            type="button" onClick={() => navigate("/quizzes")}
             className="rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-4 font-bold text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] transition hover:brightness-110"
           >
             ⚔ 퀴즈 던전 입장
