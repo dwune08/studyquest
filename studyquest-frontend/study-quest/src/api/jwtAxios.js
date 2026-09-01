@@ -64,13 +64,13 @@ jwtAxios.interceptors.response.use(
           // Refresh Token도 만료되었거나 유효하지 않은 경우 저장소 비우고 로그인으로 이동
           localStorage.clear();
           alert('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
-          window.location.href = '/login';
+          window.location.href = '/users/login';
           return Promise.reject(refreshError);
         }
       } else {
         // Refresh Token이 없으면 바로 로그인 화면으로 이동
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = '/users/login';
       }
     }
 

@@ -51,8 +51,8 @@ public class CustomSecurityConfig {
                         // 1. 회원 및 인증 관련 (/users, /users/login)
                         .requestMatchers(HttpMethod.POST, "/users", "/users/login", "/users/refresh").permitAll()
 
-                        // 2. 랭크 페이지 누구나 접근 허용 (/ranks)
-                        .requestMatchers(HttpMethod.GET, "/ranks/**").permitAll()
+                        // 2. 랭크 페이지 로그인 필요 (/ranks)
+                        .requestMatchers(HttpMethod.GET, "/ranks/**").authenticated()
 
                         // 3. 마이페이지용 스테이터스, 이벤트(출석 체크) 관련 API - 학생 전용 권한 설정 (GET, POST 등 전체)
                         .requestMatchers("/status/**", "/event/**").hasRole("STUDENT")
