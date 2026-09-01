@@ -5,7 +5,13 @@ export const useCustomNavigate = () => {
 
    return {
       goHome: () => navigate("/"),
-      goLogin: () => navigate("/users/login"),
+      goLogin: (param) => {
+         if (param?.tab === "join") {
+         navigate("/users/login?tab=join");
+         } else {
+         navigate("/users/login");
+            }
+         },
       goQuizList: () => navigate("/quizzes/list"),
       goBack: () => navigate(-1), 
    };

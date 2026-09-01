@@ -17,17 +17,7 @@ const root = createBrowserRouter([
       return { Component };
     },
   },
-
-  // 회원가입 페이지
-  {
-    path: "/users/join",
-    HydrateFallback: () => <div>Loading...</div>,
-    lazy: async () => {
-      const { default: Component } = await import("../pages/user/JoinPage");
-      return { Component };
-    },
-  },
-
+  
   // 로그인 페이지
   {
     path: "/users/login",
