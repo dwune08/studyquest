@@ -1,11 +1,12 @@
 package com.studyquest.user.repository;
 
 
-import com.studyquest.student.entity.Student;
-import com.studyquest.teacher.entity.Teacher;
-import com.studyquest.student.repository.StudentRepository;
-import com.studyquest.teacher.repository.TeacherRepository;
-import com.studyquest.user.entity.User;
+import com.studyquest.domain.user.repository.UserRepository;
+import com.studyquest.domain.user.entity.Student;
+import com.studyquest.domain.user.entity.Teacher;
+import com.studyquest.domain.user.repository.StudentRepository;
+import com.studyquest.domain.user.repository.TeacherRepository;
+import com.studyquest.domain.user.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
