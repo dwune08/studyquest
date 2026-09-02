@@ -10,7 +10,15 @@ const StudentMyPage = () => {
   const [loading, setLoading] = useState(true);
   const [warningMessage, setWarningMessage] = useState("");
 
-  const { goLogin } = useCustomNavigate();
+  const { goLogin, goModify, goRank } = useCustomNavigate();
+
+  const handleEditProfile = () => {
+    if (currentStatus.memberNo) {
+      goModify(currentStatus.memberNo);
+    } else {
+      goModify();
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -199,9 +207,18 @@ const profileImage = getStudentLevelImage(currentLevel);
                 <p className="mt-1 text-xs font-medium text-slate-400">
                   {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
                 </p>
-              </div>
-            </section>
 
+                {/* ⚙️ 정보 수정 버튼 (3학년 바로 밑에 또렷하게 배치) */}
+                <button
+                  type="button"
+                  onClick={handleEditProfile}
+                  className="w-full mt-6 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-950/60 hover:bg-blue-900/70 text-blue-300 hover:text-blue-100 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>⚙️</span> 정보 수정
+                </button>
+
+              </div>
+            </section>            
             {/* 오른쪽: 스탯 및 랭킹 영역 */}
             <section className="space-y-6">
               
@@ -252,7 +269,7 @@ const profileImage = getStudentLevelImage(currentLevel);
               </div>
 
               {/* 주간 랭킹 */}
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
+              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6" onClick={goRank}>
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                     <span>🏆</span> 학년 주간 랭킹
