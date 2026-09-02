@@ -1,11 +1,6 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import quizRouter from "./quizRouter";
 import teacherRouter from "./teacherRouter";
-
-import StudentMyPage from "../pages/student/StudentMyPage";
-import QuizListPage from "../pages/quiz/QuizListPage";
-import QuizPlayPage from "../pages/quiz/QuizPlayPage";
-import QuizResultPage from "../pages/quiz/QuizResultPage";
 
 const root = createBrowserRouter([
   // 메인 페이지
@@ -14,16 +9,6 @@ const root = createBrowserRouter([
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
       const { default: Component } = await import("../pages/MainPage");
-      return { Component };
-    },
-  },
-
-  // 회원가입 페이지
-  {
-    path: "/users/join",
-    HydrateFallback: () => <div>Loading...</div>,
-    lazy: async () => {
-      const { default: Component } = await import("../pages/user/JoinPage");
       return { Component };
     },
   },
@@ -51,17 +36,13 @@ const root = createBrowserRouter([
   // 퀴즈 관련 페이지 묶음
   {
     path: "/quizzes",
-    HydrateFallback: () => <div>Loading...</div>,
-    lazy: async () => {
-      const { default: Component } = await import("../pages/quiz/QuizListPage");
-      return { Component };
-    },
+    element: <Outlet />, // 하위 라우트(list, :no 등)가 정상적으로 렌더링되도록 Outlet 지정
     children: quizRouter(),
   },
 
   // 선생님 관련 페이지 묶음
   {
-    path: "/teacher/:no",
+    path: "/teacher",
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
       const { default: Component } = await import("../pages/teacher/TeacherPage");
@@ -70,12 +51,21 @@ const root = createBrowserRouter([
     children: teacherRouter(),
   },
 
-  // 학생 페이지
+  // 학생 마이페이지 (고정 경로 및 파라미터 경로 모두 대응)
+  {
+    path: "/student/mypage",
+    HydrateFallback: () => <div>Loading...</div>,
+    lazy: async () => {
+      const { default: Component } = await import("../pages/student/StudentMyPage");
+      return { Component };
+    },
+  },
+  // 기존 /student/:no 형식도 지원하고 싶다면 아래 라우트 유지
   {
     path: "/student/:no",
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
-      const { default: Component } = await import("../pages/StudentPage");
+      const { default: Component } = await import("../pages/student/StudentMyPage");
       return { Component };
     },
   },
@@ -98,30 +88,6 @@ const root = createBrowserRouter([
       const { default: Component } = await import("../pages/EventPage");
       return { Component };
     },
-  },
-
-  // 학생 마이페이지
-  {
-    path: "/mypage",
-    element: <StudentMyPage />,
-  },
-
-  // 퀴즈 목록
-  {
-    path: "/quiz",
-    element: <QuizListPage />,
-  },
-
-  // 퀴즈 풀이
-  {
-    path: "/quiz/:quizNo",
-    element: <QuizPlayPage />,
-  },
-
-  // 퀴즈 결과
-  {
-    path: "/quiz/:quizNo/result",
-    element: <QuizResultPage />,
   },
 ]);
 

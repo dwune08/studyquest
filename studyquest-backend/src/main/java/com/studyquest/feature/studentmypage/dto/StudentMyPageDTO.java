@@ -1,4 +1,4 @@
-package com.studyquest.feature.mypage.dto;
+package com.studyquest.feature.studentmypage.dto;
 
 import com.studyquest.domain.rank.dto.RankDTO;
 import com.studyquest.domain.status.dto.StatusDTO;

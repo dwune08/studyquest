@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // React Router 이동 hook
 import axios from "axios";
+import { useCustomNavigate } from "../../hooks/useCustomNavigate"; // 👈 커스텀 훅 경로 확인
 
 const LoginPage = () => {
-  const navigate = useNavigate(); // 페이지 이동 핸들러
+  // 커스텀 훅에서 필요한 이동 함수들 추출
+  const { goStudentMyPage } = useCustomNavigate(); 
   const [isLoginTab, setIsLoginTab] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -34,25 +35,32 @@ const LoginPage = () => {
       try {
         const response = await axios.post("http://localhost:8080/users/login", loginPayload);
         
-        // 백엔드 응답에서 토큰 및 유저 정보 추출
-        const { accessToken, refreshToken, userNo, userName, userType } = response.data;
+        // 백엔드 응답 데이터 추출
+        const { accessToken, refreshToken, userNo, studentNo, userName, userEmail, userType, studentGrade } = response.data;
 
-        // localStorage에 토큰 및 로그인 유저 필수 데이터 저장
+        // 토큰 및 필수 유저 데이터 localStorage 저장
         if (accessToken) localStorage.setItem("accessToken", accessToken);
         if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
         
-        const userInfo = { userNo, userName, userType };
+        const userInfo = { 
+          userNo: userNo || studentNo, 
+          studentNo: studentNo || userNo,
+          userName, 
+          userEmail,
+          studentGrade,
+          userType 
+        };
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
         alert(`${userName || '모험가'}님, 환영합니다!`);
 
-        // 역할(userType)에 따라 지정된 페이지로 이동 (예시)
+        // 커스텀 훅을 통한 이동 제어
         if (userType === 1) {
-          navigate("/student/dashboard"); // 학생 메인 페이지
+          goStudentMyPage(); // 👈 커스텀 훅 함수 사용
         } else if (userType === 2) {
-          navigate("/teacher/dashboard"); // 선생님 메인 페이지
+          // 필요 시 useCustomNavigate에 goTeacherDashboard 추가 후 호출
         } else {
-          navigate("/main"); // 공통 메인 페이지
+          // 필요 시 useCustomNavigate에 goMain 추가 후 호출
         }
 
       } catch (error) {
@@ -79,7 +87,6 @@ const LoginPage = () => {
         const response = await axios.post("http://localhost:8080/users", signUpPayload);
         alert(response.data.message || "회원가입이 완료되었습니다! 로그인 해주세요.");
         
-        // 회원가입 완료 후 로그인 탭으로 전환 + 가입했던 이메일은 유지
         setIsLoginTab(true);
         setFormData((prev) => ({ ...prev, password: '' })); 
 
@@ -243,9 +250,6 @@ const LoginPage = () => {
                       <option value="1" className="bg-slate-900">1학년</option>
                       <option value="2" className="bg-slate-900">2학년</option>
                       <option value="3" className="bg-slate-900">3학년</option>
-                      <option value="4" className="bg-slate-900">4학년</option>
-                      <option value="5" className="bg-slate-900">5학년</option>
-                      <option value="6" className="bg-slate-900">6학년</option>
                     </select>
                     <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-xs text-slate-500">
                       ▼

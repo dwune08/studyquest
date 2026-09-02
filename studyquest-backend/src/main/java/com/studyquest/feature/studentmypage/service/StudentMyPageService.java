@@ -1,6 +1,6 @@
-package com.studyquest.feature.mypage.service;
+package com.studyquest.feature.studentmypage.service;
 
-import com.studyquest.feature.mypage.dto.StudentMyPageDTO;
+import com.studyquest.feature.studentmypage.dto.StudentMyPageDTO;
 
 public interface StudentMyPageService {
 

@@ -38,6 +38,17 @@ public class Student {
     public Student(User user, Integer studentGrade) {
         this.user = user;
         this.studentGrade = studentGrade;
+        // Student가 생성될 때 자신을 등록한 Status를 자동 생성
+        this.status = Status.builder()
+                .student(this)
+                .build();
+    }
+
+    // 초기 스탯 생성 메서드
+    public void initStatus() {
+        this.status = Status.builder()
+                .student(this) // MapsId에 의해 PK이자 FK로 studentNo가 자동 설정됨
+                .build();
     }
 
     // 학년 변경 메서드

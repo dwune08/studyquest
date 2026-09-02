@@ -48,21 +48,21 @@ public class CustomSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 회원 및 인증 관련 (/users, /users/login)
+                        // 1. 회원가입 및 로그인 인증 허용 (/users/login, /users, /users/refresh)
                         .requestMatchers(HttpMethod.POST, "/users", "/users/login", "/users/refresh").permitAll()
 
-                        // 2. 랭크 페이지 로그인 필요 (/ranks)
-                        .requestMatchers(HttpMethod.GET, "/ranks/**").authenticated()
+                        // 2. 마이페이지 및 학생 정보 관련 API 권한 부여 (추가됨 ⭐️)
+                        .requestMatchers("/mypage/**", "/student/**", "/status/**", "/event/**").hasRole("STUDENT")
 
-                        // 3. 마이페이지용 스테이터스, 이벤트(출석 체크) 관련 API - 학생 전용 권한 설정 (GET, POST 등 전체)
-                        .requestMatchers("/status/**", "/event/**").hasRole("STUDENT")
+                        // 3. 랭킹 API
+                        .requestMatchers(HttpMethod.GET, "/ranks/**").authenticated()
 
                         // 4. 선생님 전용 API (퀴즈 생성/수정/삭제)
                         .requestMatchers(HttpMethod.POST, "/quizzes").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")
 
-                        // 5. 학생/선생님 공용 및 기타 조회 API
+                        // 5. 학생/선생님 공용 조회 API
                         .requestMatchers(HttpMethod.GET, "/quizzes/**", "/results/**", "/teachers/**").authenticated()
 
                         // 6. 결과 제출 (/results)
