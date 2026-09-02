@@ -1,8 +1,12 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link, useParams } from "react-router-dom";
+import "../../styles/quiz.css";
 
 const QuizResultPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { quizNo } = useParams();
+  const { state } = useLocation();
+
 
   const { quiz, answer } =
     location.state || {};
@@ -75,7 +79,7 @@ const QuizResultPage = () => {
 
           <button
             onClick={() =>
-              navigate("/quiz")
+              navigate("/quizzes")
             }
             className="rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-4 font-bold"
           >
