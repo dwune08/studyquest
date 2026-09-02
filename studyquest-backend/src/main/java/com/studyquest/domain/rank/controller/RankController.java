@@ -1,5 +1,6 @@
 package com.studyquest.domain.rank.controller;
 
+import com.studyquest.domain.user.dto.UserDTO;
 import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import com.studyquest.domain.rank.dto.RankDTO;
@@ -22,8 +23,9 @@ public class RankController {
     @GetMapping
     public ResponseEntity<PageResponseDTO<RankDTO>> getRanking(
             PageRequestDTO pageRequestDTO,
-            @AuthenticationPrincipal Long loginStudentNo
-    ) {
+            @AuthenticationPrincipal UserDTO userDTO
+            ) {
+        Long loginStudentNo = userDTO.getUserNo();
         PageResponseDTO<RankDTO> response = rankService.getRankings(pageRequestDTO, loginStudentNo);
         return ResponseEntity.ok(response);
     }

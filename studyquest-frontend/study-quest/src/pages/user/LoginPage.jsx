@@ -5,9 +5,8 @@ import JoinComponent from "../../components/user/JoinComponent";
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams();
-  
-  // 💡 수정된 부분: ?tab=join 이 전달되었을 때만 회원가입(isLoginTab = false)
-  // ?tab=join 이 없으면(불러오기 클릭 시) 로그인(isLoginTab = true)이 활성화됩니다.
+
+  // 1. ?tab=join 이 붙어오면 회원가입(false), 없으면 로그인(true) 탭을 기본값으로 지정
   const isJoinTab = searchParams.get("tab") === "join";
   const [isLoginTab, setIsLoginTab] = useState(!isJoinTab);
 
@@ -62,7 +61,7 @@ const LoginPage = () => {
           </button>
         </div>
 
-        {/* 탭 전환 스위칭 */}
+        {/* 2. 각 컴포넌트 전환 연결 */}
         {isLoginTab ? (
           <LoginComponent />
         ) : (

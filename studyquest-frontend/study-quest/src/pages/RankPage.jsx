@@ -1,46 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import BasicLayout from "../layouts/BasicLayout";
+import jwtAxios from "../api/jwtAxios";
 
 const MainDashboardPage = () => {
-  const weeklyRankings = [
-    { rank: 1, medal: "🥇", name: "이영희", level: 35, isMe: false },
-    { rank: 2, medal: "🥈", name: "김철수", level: 31, isMe: true },
-    { rank: 3, medal: "🥉", name: "최명희", level: 28, isMe: false },
-    { rank: 4, medal: "🎖️", name: "박지훈", level: 25, isMe: false },
-    { rank: 5, medal: "🎖️", name: "정민수", level: 24, isMe: false },
-    { rank: 6, medal: "🎖️", name: "한서윤", level: 22, isMe: false },
-    { rank: 7, medal: "🎖️", name: "강현우", level: 20, isMe: false },
-    { rank: 8, medal: "🎖️", name: "윤아름", level: 19, isMe: false },
-    { rank: 9, medal: "🎖️", name: "임하은", level: 17, isMe: false },
-    { rank: 10, medal: "🎖️", name: "오도현", level: 16, isMe: false },
-    { rank: 11, medal: "🎖️", name: "송지우", level: 15, isMe: false },
-    { rank: 12, medal: "🎖️", name: "신유진", level: 13, isMe: false },
-    { rank: 13, medal: "🎖️", name: "권태양", level: 11, isMe: false },
-    { rank: 14, medal: "🎖️", name: "황보람", level: 10, isMe: false },
-    { rank: 15, medal: "🎖️", name: "안성민", level: 8, isMe: false },
-    { rank: 16, medal: "🎖️", name: "유다은", level: 7, isMe: false },
-    { rank: 17, medal: "🎖️", name: "배준호", level: 5, isMe: false },
-    { rank: 18, medal: "🎖️", name: "조수빈", level: 4, isMe: false },
-    { rank: 19, medal: "🎖️", name: "예지환", level: 3, isMe: false },
-    { rank: 20, medal: "🎖️", name: "이찬수", level: 1, isMe: false },
-  ];
-
   const ITEMS_PER_PAGE = 6;
-  const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = Math.ceil(weeklyRankings.length / ITEMS_PER_PAGE);
+  
+  // PageRequestDTO의 기본 page는 1부터 시작
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [rankings, setRankings] = useState([]);
+  const [pageInfo, setPageInfo] = useState({
+    totalPage: 1,
+    prev: false,
+    next: false,
+    prevPage: 1,
+    nextPage: 1,
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
+  // 로컬스토리지에서 로그인한 내 정보 가져오기
+  const storedUser = localStorage.getItem("userInfo");
+  const myStudentNo = storedUser ? JSON.parse(storedUser).userNo : null;
+
+  // 랭킹 데이터 불러오기 함수
+  const fetchRankings = useCallback(async (page) => {
+    setIsLoading(true);
+    try {
+      // GET /ranks?page=1&size=6
+      const response = await jwtAxios.get("/ranks", {
+        params: {
+          page: page,
+          size: ITEMS_PER_PAGE,
+        },
+      });
+
+      // 백엔드 PageResponseDTO 응답 필드 매핑
+      const { dtoList, totalPage, prev, next, prevPage, nextPage } = response.data;
+      
+      setRankings(dtoList || []);
+      setPageInfo({
+        totalPage: totalPage || 1,
+        prev,
+        next,
+        prevPage,
+        nextPage,
+      });
+    } catch (error) {
+      console.error("랭킹 데이터 조회 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // 페이지 변경 시 API 재호출
+  useEffect(() => {
+    fetchRankings(currentPage);
+  }, [currentPage, fetchRankings]);
+
+  // 이전 페이지 이동 핸들러 (루프 순환 방식)
   const handlePrev = () => {
-    setCurrentPage((prev) => (prev === 0 ? totalPages - 1 : prev - 1));
+    setCurrentPage((prev) => (prev <= 1 ? pageInfo.totalPage : prev - 1));
   };
 
+  // 다음 페이지 이동 핸들러 (루프 순환 방식)
   const handleNext = () => {
-    setCurrentPage((prev) => (prev === totalPages - 1 ? 0 : prev + 1));
+    setCurrentPage((prev) => (prev >= pageInfo.totalPage ? 1 : prev + 1));
   };
 
-  const currentRankings = weeklyRankings.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
-  );
+  // 순위에 따른 메달 반환 함수
+  const getMedal = (rank) => {
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return "🎖️";
+  };
 
   return (
     <BasicLayout>
@@ -49,7 +81,7 @@ const MainDashboardPage = () => {
         {/* 배경 오로라 */}
         <div className="absolute w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
-        {/* 메인 카드 (h-[500px] 고정 및 고정 수치 반영) */}
+        {/* 메인 카드 */}
         <div className="w-full max-w-lg h-[500px] bg-slate-900/90 border border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] backdrop-blur-md relative z-10 flex flex-col justify-between">
           
           {/* 이전 화살표 */}
@@ -78,40 +110,54 @@ const MainDashboardPage = () => {
               🏆 학급 주간 랭킹
             </h2>
             <span className="text-xs font-semibold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
-              {currentPage + 1} / {totalPages}
+              {currentPage} / {pageInfo.totalPage}
             </span>
           </div>
 
-          {/* 리스트 영역 (h-[380px] 고정, content-start 정렬) */}
+          {/* 리스트 영역 */}
           <div className="w-full h-[380px] flex flex-col justify-start gap-2.5">
-            {currentRankings.map((item) => (
-              <div
-                key={item.rank}
-                className={`h-[52px] flex items-center justify-between px-4 rounded-xl border transition-all ${
-                  item.isMe
-                    ? "bg-blue-950/60 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)] text-blue-200"
-                    : "bg-slate-950/40 border-slate-800/80 text-slate-300 hover:bg-slate-800/50"
-                }`}
-              >
-                {/* 순위 & 메달 */}
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-black min-w-[42px] text-slate-400 whitespace-nowrap">
-                    {item.rank}위
-                  </span>
-                  <span className="text-lg">{item.medal}</span>
-                </div>
-
-                {/* 이름 & 레벨 */}
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">
-                    {item.name}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">
-                    {item.isMe ? "(ME)" : `(Lv. ${item.level})`}
-                  </span>
-                </div>
+            {isLoading ? (
+              <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+                랭킹 데이터를 불러오는 중...
               </div>
-            ))}
+            ) : rankings.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+                등록된 랭킹 데이터가 없습니다.
+              </div>
+            ) : (
+              rankings.map((item) => {
+                const isMe = item.studentNo === myStudentNo;
+
+                return (
+                  <div
+                    key={item.studentNo || item.rank}
+                    className={`h-[52px] flex items-center justify-between px-4 rounded-xl border transition-all ${
+                      isMe
+                        ? "bg-blue-950/60 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)] text-blue-200"
+                        : "bg-slate-950/40 border-slate-800/80 text-slate-300 hover:bg-slate-800/50"
+                    }`}
+                  >
+                    {/* 순위 & 메달 */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black min-w-[42px] text-slate-400 whitespace-nowrap">
+                        {item.rank}위
+                      </span>
+                      <span className="text-lg">{getMedal(item.rank)}</span>
+                    </div>
+
+                    {/* 이름 & 레벨 */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">
+                        {item.studentName}
+                      </span>
+                      <span className="text-xs text-slate-400 font-medium">
+                        {isMe ? "(ME)" : `(Lv. ${item.level})`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
         </div>
