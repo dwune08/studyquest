@@ -12,7 +12,8 @@ export const useCustomNavigate = () => {
         navigate("/users/login");
       }
     },
-    goModify: () => navigate("/users/:no/modify"),
+    // 회원번호(userNo)를 전달받아 경로를 구성합니다.
+    goModify: (userNo) => navigate(`/users/${userNo}/modify`),
     goQuizList: () => navigate("/quizzes"),
     goQuizRegister: () => navigate("/quizzes/register"),
     goEvent: () => navigate("/event"),

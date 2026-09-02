@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 
 const ModifyPage = () => {
   const { no } = useParams();
-  const { goStudentMyPage } = useCustomNavigate();
+  const { goStudentMyPage, goBack } = useCustomNavigate();
+
+  // Redux 로그인 정보 추출 (키값: userNo)
+  const loginUser = useSelector((state) => state.loginSlice) || {};
 
   const [formData, setFormData] = useState({
     userType: "student",
@@ -18,34 +22,56 @@ const ModifyPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const isFetched = useRef(false);
 
   useEffect(() => {
-    const fetchMemberData = async () => {
-      try {
-        setLoading(true);
-        const res = await jwtAxios.get(`/member/${no}`);
-        if (res.data) {
-          setFormData({
-            userType: res.data.role === "TEACHER" || res.data.userType === 2 ? "teacher" : "student",
-            email: res.data.email || res.data.userEmail || "",
-            password: "",
-            name: res.data.name || res.data.userName || "",
-            grade: String(res.data.grade || res.data.studentGrade || res.data.teacherGrade || "3").replace("학년", ""),
-            birthDate: res.data.birthDate || res.data.userBirth || "",
-            phone: res.data.phone || res.data.userPhone || "",
-          });
-        }
-      } catch (err) {
-        console.error("회원 정보 로딩 실패:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // 1. URL의 no 유효성 검사
+  if (!no || no === "undefined") {
+    alert("올바르지 않은 접근입니다.");
+    goBack();
+    return;
+  }
 
-    if (no) {
-      fetchMemberData();
+  if (isFetched.current) return;
+
+  // 2. 본인 확인 검증 (studentNo 또는 teacherNo와 비교)
+  const currentLoginNo = loginUser.studentNo || loginUser.teacherNo;
+  if (currentLoginNo && String(currentLoginNo) !== String(no)) {
+    alert("본인의 정보만 수정할 수 있습니다.");
+    goBack();
+    return;
+  }
+
+  // 3. 회원 정보 조회 API 호출
+  const fetchMemberData = async () => {
+    try {
+      isFetched.current = true;
+      setLoading(true);
+
+      const res = await jwtAxios.get(`/users/${no}`);
+      if (res.data) {
+        const data = res.data;
+        setFormData({
+          userType: data.userType === 2 || data.role === "TEACHER" ? "teacher" : "student",
+          email: data.userEmail || data.email || "",
+          password: "",
+          name: data.userName || data.name || "",
+          grade: String(data.studentGrade || data.grade || "3").replace("학년", ""),
+          birthDate: data.userBirth ? String(data.userBirth).slice(0, 10) : "",
+          phone: data.userPhone || data.phone || "",
+        });
+      }
+    } catch (err) {
+      console.error("회원 정보 로딩 실패:", err);
+      alert("회원 정보를 불러오는 데 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
-  }, [no]);
+  };
+
+  fetchMemberData();
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [no]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,28 +84,26 @@ const ModifyPage = () => {
       setLoading(true);
 
       const updateData = {
-        name: formData.name,
-        phone: formData.phone,
-        ...(formData.password && { password: formData.password }),
+        userName: formData.name,
+        userPhone: formData.phone,
+        ...(formData.password && { userPw: formData.password }),
       };
 
-      await jwtAxios.put(`/member/modify/${no}`, updateData);
+      await jwtAxios.patch(`/users/${no}`, updateData);
       alert("회원 정보가 성공적으로 수정되었습니다.");
+      
       goStudentMyPage();
     } catch (err) {
       console.error("회원 정보 수정 실패:", err);
-      alert("정보 수정에 실패했습니다. 다시 시도해 주세요.");
+      alert(err.response?.data?.message || "정보 수정에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 공통 입력창 스타일 정의
-  // 1) 수정 불가능한 input 스타일 (어둡고 차분한 느낌)
   const disabledInputStyle = 
     "w-full bg-slate-950/30 border border-slate-800/60 rounded-lg h-10 px-3 text-xs text-slate-500 cursor-not-allowed outline-none select-none";
 
-  // 2) 수정 가능한 input 스타일 (은은한 블루 테두리 + 글로우 + 활성화 텍스트)
   const editableInputStyle = 
     "w-full bg-slate-950/80 border border-blue-500/40 rounded-lg h-10 px-3 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 hover:border-blue-500/70 transition-all duration-200 shadow-[0_0_10px_rgba(59,130,246,0.1)]";
 
@@ -157,7 +181,7 @@ const ModifyPage = () => {
               />
             </div>
 
-            {/* 3. 비밀번호 (수정 가능 ✨) */}
+            {/* 3. 비밀번호 (수정 가능) */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-blue-300 flex items-center gap-1">
                 비밀번호 
@@ -174,7 +198,7 @@ const ModifyPage = () => {
               />
             </div>
 
-            {/* 4. 이름(수정 가능 ✨) / 학년(수정 불가) */}
+            {/* 4. 이름(수정 가능) / 학년(수정 불가) */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-blue-300 flex items-center justify-between">
@@ -213,7 +237,7 @@ const ModifyPage = () => {
               </div>
             </div>
 
-            {/* 5. 생년월일(수정 불가) / 연락처(수정 가능 ✨) */}
+            {/* 5. 생년월일(수정 불가) / 연락처(수정 가능) */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-500">

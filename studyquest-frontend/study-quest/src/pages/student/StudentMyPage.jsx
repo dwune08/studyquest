@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import jwtAxios from "../../api/jwtAxios"; // 프로젝트 구조에 맞게 경로 확인
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import BasicLayout from "../../layouts/BasicLayout";
@@ -12,13 +13,18 @@ const StudentMyPage = () => {
 
   const { goLogin, goModify, goRank } = useCustomNavigate();
 
-  const handleEditProfile = () => {
-    if (currentStatus.memberNo) {
-      goModify(currentStatus.memberNo);
-    } else {
-      goModify();
-    }
-  };
+  const loginUser = useSelector((state) => state.loginSlice);
+
+  const handleEditClick = () => {
+  // Redux에서 학생 번호(studentNo) 또는 API response(status)의 studentNo 참조
+  const currentStudentNo = loginUser?.studentNo || status?.studentNo;
+
+  if (currentStudentNo) {
+    goModify(currentStudentNo);
+  } else {
+    alert("회원 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
+  }
+};
 
   useEffect(() => {
     const loadData = async () => {
@@ -211,7 +217,7 @@ const profileImage = getStudentLevelImage(currentLevel);
                 {/* ⚙️ 정보 수정 버튼 (3학년 바로 밑에 또렷하게 배치) */}
                 <button
                   type="button"
-                  onClick={handleEditProfile}
+                  onClick={handleEditClick}
                   className="w-full mt-6 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-950/60 hover:bg-blue-900/70 text-blue-300 hover:text-blue-100 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>⚙️</span> 정보 수정
