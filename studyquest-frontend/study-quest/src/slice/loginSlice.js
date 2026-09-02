@@ -1,39 +1,82 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { loginPost } from "../api/memberApi"; 
+import { setCookie, getCookie, removeCookie } from "../utils/cookieUtil";
 
-const initState = {
-    email: '',
-    userName: '',
-    userType: null,     // 0: 관리자, 1: 학생, 2: 선생님
-    teacherNo: null,    // 선생님 고유 번호
-    studentNo: null,    // 학생 고유 번호
-    teacherGrade: null,
-    studentGrade: null
+// 1. 초기 상태 설정 (새로고침 시 쿠키에서 로그인 정보 자동 복원)
+const initState = () => {
+  const memberCookie = getCookie("member");
+
+  if (memberCookie) {
+    return memberCookie;
+  }
+
+  return {
+    userNo: null,
+    studentNo: null,
+    teacherNo: null,
+    userName: "",
+    userEmail: "",
+    userType: null,
+  };
 };
 
-const loginSlice = createSlice({
-    name: 'LoginSlice',
-    initialState: initState,
-    reducers: {
-        login: (state, action) => {
-            console.log("로그인.....", action.payload);
-            const payload = action.payload;
+// 2. 비동기 로그인 처리 (createAsyncThunk)
+export const loginPostAsync = createAsyncThunk("loginPostAsync", (param) => {
+  return loginPost(param);
+});
 
-            // 서버에서 내려준 DTO 필드값들을 state에 안전하게 매핑
-            state.email = payload.userEmail || payload.email || '';
-            state.userName = payload.userName || '';
-            state.userType = payload.userType ?? null;
-            state.teacherNo = payload.teacherNo ?? null;
-            state.studentNo = payload.studentNo ?? null;
-            state.teacherGrade = payload.teacherGrade ?? null;
-            state.studentGrade = payload.studentGrade ?? null;
-        },
-        
-        logout: (state, action) => {
-            console.log("로그아웃...... ");
-            // 로그아웃 시 상태를 초기값으로 리셋
-            return { ...initState };
+// 3. Slice 정의
+const loginSlice = createSlice({
+  name: "loginSlice",
+  initialState: initState(),
+  reducers: {
+    login: (state, action) => {
+      console.log("로그인.....", action.payload);
+      const data = action.payload;
+
+      // 쿠키에 로그인 데이터 저장 (1일)
+      setCookie("member", JSON.stringify(data), 1);
+
+      return data;
+    },
+    logout: (state, action) => {
+      console.log("로그아웃......");
+
+      // 쿠키 삭제
+      removeCookie("member");
+
+      // 초기 상태로 리셋
+      return {
+        userNo: null,
+        studentNo: null,
+        teacherNo: null,
+        userName: "",
+        userEmail: "",
+        userType: null,
+      };
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginPostAsync.fulfilled, (state, action) => {
+        console.log("fulfilled : 로그인 성공");
+
+        const payload = action.payload;
+
+        // 로그인 성공 시 서버에서 넘어온 전체 payload 객체를 쿠키에 저장
+        if (payload) {
+          setCookie("member", JSON.stringify(payload), 1);
         }
-    }
+
+        return payload;
+      })
+      .addCase(loginPostAsync.pending, (state, action) => {
+        console.log("pending : 로그인 처리 중");
+      })
+      .addCase(loginPostAsync.rejected, (state, action) => {
+        console.log("rejected : 로그인 오류");
+      });
+  },
 });
 
 export const { login, logout } = loginSlice.actions;
