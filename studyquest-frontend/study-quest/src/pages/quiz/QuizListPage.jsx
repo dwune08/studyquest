@@ -49,10 +49,11 @@ const QuizListPage = () => {
 
   // 카테고리가 선택되었을 때만 API 호출
   useEffect(() => {
-    if (selectedType !== null) {
-      fetchQuizzes(selectedType, 1);
-    }
-  }, [selectedType]);
+  const loadData = async () => {
+    await fetchQuizzes(selectedType, 1);
+  };
+  loadData();
+}, [selectedType]);
 
   const handleCategorySelect = (type) => {
     setSelectedType(type);
