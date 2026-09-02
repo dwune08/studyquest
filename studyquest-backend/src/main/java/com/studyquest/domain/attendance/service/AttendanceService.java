@@ -1,6 +1,5 @@
 package com.studyquest.domain.attendance.service;
 
-import com.studyquest.domain.attendance.dto.AttendanceCheckResponseDTO;
 import com.studyquest.domain.attendance.dto.AttendanceDTO;
 
 public interface AttendanceService {
@@ -8,5 +7,5 @@ public interface AttendanceService {
     AttendanceDTO getMyAttendance(Long studentNo);
 
     // 출석 체크 진행
-    AttendanceCheckResponseDTO doCheckIn(Long studentNo);
+    AttendanceDTO doCheckIn(Long studentNo);
 }
