@@ -55,6 +55,7 @@ const JoinComponent = ({ onSuccess }) => {
           <div className="flex gap-3 bg-slate-950/60 border border-slate-800 rounded-lg p-1.5 px-3">
             <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
               <input
+                id="user-teacher"
                 type="radio"
                 name="userType"
                 value="teacher"
@@ -66,6 +67,7 @@ const JoinComponent = ({ onSuccess }) => {
             <span className="text-slate-800">|</span>
             <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
               <input
+                id="user-student"
                 type="radio"
                 name="userType"
                 value="student"
@@ -87,6 +89,7 @@ const JoinComponent = ({ onSuccess }) => {
             value={formData.email}
             onChange={handleChange}
             placeholder="quest@study.com"
+            autoComplete="username"
             required
             className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-10 px-3 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
           />
@@ -102,6 +105,7 @@ const JoinComponent = ({ onSuccess }) => {
             value={formData.password}
             onChange={handleChange}
             placeholder="••••••••"
+            autoComplete="new-password"
             required
             className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-10 px-3 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
           />
@@ -180,7 +184,7 @@ const JoinComponent = ({ onSuccess }) => {
         type="submit"
         className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-widest rounded-xl transition-all duration-200 shadow-[0_4px_20px_rgba(37,99,235,0.4)] active:scale-[0.98] cursor-pointer border border-blue-400/30 shrink-0 mt-auto"
       >
-        {formData.userType === "student" ? '🗡️ 모험가 등록' : '👑 길드 마스터 등록'}
+        {formData.userType === 'student' ? '🗡️ 모험가 등록' : '👑 길드 마스터 등록'}
       </button>
     </form>
   );
