@@ -43,7 +43,7 @@ export default function TeacherPage() {
                   : "text-gray-400 hover:bg-[#162032] hover:text-gray-200"
               }`}
             >
-              <span>•</span> 학생 성적
+              <span>•</span> 학생 관리
             </button>
             <button
               onClick={() => setActiveMenu("quizzes")}

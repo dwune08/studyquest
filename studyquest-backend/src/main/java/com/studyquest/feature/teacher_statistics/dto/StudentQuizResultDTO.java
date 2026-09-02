@@ -1,4 +1,4 @@
-package com.studyquest.feature.teacher_statistics;
+package com.studyquest.feature.teacher_statistics.dto;
 
 import com.studyquest.domain.result.entity.Result;
 import lombok.AllArgsConstructor;

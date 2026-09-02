@@ -46,5 +46,9 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
     """)
     Object[] findGradeTotalAccuracy(@Param("grade") Integer grade);
 
+    // 7. [선생님용] 특정 선생님(teacherNo)이 출제한 퀴즈에 대한 모든 학생의 제출 결과를 최신순으로 조회
+    @Query("SELECT r FROM Result r JOIN FETCH r.student s JOIN FETCH s.user u JOIN FETCH r.quiz q WHERE q.teacherNo = :teacherNo ORDER BY r.resultDate DESC")
+    List<Result> findResultsByTeacherNo(@Param("teacherNo") Long teacherNo);
+
     List<Result> findTop5ByStudent_StudentNoOrderByResultDateDesc(Long studentNo);
 }

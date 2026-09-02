@@ -15,17 +15,18 @@ public class UserDTO extends User {
     private String userEmail;
     private String userPw;
     private String userName;
-    private Integer userType; // 1: 학생, 2: 교사 등
+    private Integer userType;
+    private Long teacherNo; // 👈 추가
+    private Long studentNo; // 👈 추가
 
     private List<String> roleNames;
 
-    public UserDTO(Long userNo, String userEmail, String userPw, String userName, Integer userType, List<String> roleNames) {
-        // Spring Security 인증 처리를 위해 이메일을 username으로, userPw를 password로 전달
+    public UserDTO(Long userNo, String userEmail, String userPw, String userName, Integer userType, Long teacherNo, Long studentNo, List<String> roleNames) {
         super(
                 userEmail,
                 userPw,
                 roleNames.stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
                         .toList()
         );
 
@@ -34,6 +35,8 @@ public class UserDTO extends User {
         this.userPw = userPw;
         this.userName = userName;
         this.userType = userType;
+        this.teacherNo = teacherNo; // 👈 추가
+        this.studentNo = studentNo; // 👈 추가
         this.roleNames = roleNames;
     }
 
@@ -41,11 +44,13 @@ public class UserDTO extends User {
     public Map<String, Object> getClaims() {
         Map<String, Object> dataMap = new HashMap<>();
 
-        dataMap.put("userNo", userNo);         // PK 정보 (서비스/게이미피케이션 로직에서 필수)
-        dataMap.put("userEmail", userEmail);   // 로그인 식별자
-        dataMap.put("userName", userName);     // 사용자 이름
-        dataMap.put("userType", userType);     // 학생/교사 구분값
-        dataMap.put("roleNames", roleNames);   // 권한 목록
+        dataMap.put("userNo", userNo);
+        dataMap.put("userEmail", userEmail);
+        dataMap.put("userName", userName);
+        dataMap.put("userType", userType);
+        dataMap.put("teacherNo", teacherNo);   // ⭐️ 클레임에 추가
+        dataMap.put("studentNo", studentNo);   // ⭐️ 클레임에 추가
+        dataMap.put("roleNames", roleNames);
 
         return dataMap;
     }

@@ -69,7 +69,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             // JWT 검증 및 Claims 추출
             Map<String, Object> claims = JWTUtil.validateToken(accessToken);
 
-            // Claims 데이터 안전 파sing (NPE 방지)
+            // Claims 데이터 안전 파싱 (NPE 방지)
             Object userNoObj = claims.get("userNo");
             Object userTypeObj = claims.get("userType");
 
@@ -82,18 +82,34 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String userName = (String) claims.get("userName");
             Integer userType = userTypeObj != null ? ((Number) userTypeObj).intValue() : 1;
 
+            // teacherNo, studentNo 추출
+            Object teacherNoObj = claims.get("teacherNo");
+            Long teacherNo = teacherNoObj != null ? ((Number) teacherNoObj).longValue() : null;
+
+            Object studentNoObj = claims.get("studentNo");
+            Long studentNo = studentNoObj != null ? ((Number) studentNoObj).longValue() : null;
+
             @SuppressWarnings("unchecked")
             List<String> roleNames = claims.get("roleNames") != null
                     ? (List<String>) claims.get("roleNames")
-                    : Collections.emptyList();
+                    : new java.util.ArrayList<>();
 
-            // UserDTO 인증 객체 생성
+            // roleNames가 비어있다면 userType 기반으로 채워주기
+            if (roleNames.isEmpty()) {
+                if (userType == 0) roleNames.add("ADMIN");
+                else if (userType == 1) roleNames.add("STUDENT");
+                else if (userType == 2) roleNames.add("TEACHER");
+            }
+
+            // UserDTO 인증 객체 생성 (변경되거나 추가된 파라미터 구조 반영)
             UserDTO userDTO = new UserDTO(
                     userNo,
                     userEmail,
                     "",
                     userName,
                     userType,
+                    teacherNo,
+                    studentNo,
                     roleNames
             );
 
@@ -101,7 +117,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDTO,
                     null,
-                    userDTO.getAuthorities() // UserDTO 내부 getAuthorities()의 GrantedAuthority 변환 로직 체크 필요
+                    userDTO.getAuthorities()
             );
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();

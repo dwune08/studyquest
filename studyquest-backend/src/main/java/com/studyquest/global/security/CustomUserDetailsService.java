@@ -1,8 +1,11 @@
 package com.studyquest.global.security;
 
 import com.studyquest.domain.user.dto.UserDTO;
+import com.studyquest.domain.user.entity.Student;
+import com.studyquest.domain.user.entity.Teacher;
 import com.studyquest.domain.user.entity.User;
-import com.studyquest.domain.user.entity.UserRole;
+import com.studyquest.domain.user.repository.StudentRepository;
+import com.studyquest.domain.user.repository.TeacherRepository;
 import com.studyquest.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,40 +14,60 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("========== loadUserByUsername() 실행 - username(email): {} ==========", username);
+        log.info("========== CustomUserDetailsService 실행: {} ==========", username);
 
-        // 1. 이메일 기반 사용자 조회
         User user = userRepository.findByUserEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("해당 이메일을 가진 사용자를 찾을 수 없습니다: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("해당 이메일이 존재하지 않습니다: " + username));
 
-        // 2. userType 매핑 (0: ADMIN, 1: STUDENT, 2: TEACHER)
-        String roleName = switch (user.getUserType()) {
-            case 0 -> UserRole.ADMIN.name();
-            case 1 -> UserRole.STUDENT.name();
-            case 2 -> UserRole.TEACHER.name();
-            default -> UserRole.STUDENT.name();
-        };
+        Long teacherNo = null;
+        Long studentNo = null;
 
-        List<String> roleNames = List.of(roleName);
+        // userType에 따른 상세 번호 조회
+        if (user.getUserType() == 1) {
+            Student student = studentRepository.findByUser_UserNo(user.getUserNo()).orElse(null);
+            if (student != null) {
+                studentNo = student.getStudentNo();
+            }
+        } else if (user.getUserType() == 2) {
+            Teacher teacher = teacherRepository.findByUser_UserNo(user.getUserNo()).orElse(null);
+            if (teacher != null) {
+                teacherNo = teacher.getTeacherNo();
+            }
+        }
 
-        // 3. UserDTO 객체 생성 및 반환
+        // roleNames 생성
+        List<String> roleNames = new ArrayList<>();
+        if (user.getUserType() == 0) {
+            roleNames.add("ADMIN");
+        } else if (user.getUserType() == 1) {
+            roleNames.add("STUDENT");
+        } else if (user.getUserType() == 2) {
+            roleNames.add("TEACHER");
+        }
+
+        // UserDTO 객체 생성 및 반환
         return new UserDTO(
                 user.getUserNo(),
                 user.getUserEmail(),
                 user.getUserPw(),
                 user.getUserName(),
                 user.getUserType(),
+                teacherNo,
+                studentNo,
                 roleNames
         );
     }
