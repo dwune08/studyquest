@@ -15,7 +15,7 @@ export const useCustomNavigate = () => {
     goQuizList: () => navigate("/quizzes"),
     goQuizRegister: () => navigate("/quizzes/register"),
     goEvent: () => navigate("/event"),
-    goStudentMyPage: () => navigate("/student/mypage"),
+    goStudentMyPage: () => navigate("/student"),
     goTeacherPage: () => navigate("/teacher"),
     goQuizDetail: (quizNo) => navigate(`/quizzes/${quizNo}`),
     goBack: () => navigate(-1),
