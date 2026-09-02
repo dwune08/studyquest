@@ -137,6 +137,7 @@ public class UserServiceImpl implements UserService {
             Teacher teacher = teacherRepository.findByUser_UserNo(userNo)
                     .orElseThrow(() -> new EntityNotFoundException("선생님 정보를 찾을 수 없습니다."));
             teacher.changeGrade(dto.getTeacherGrade());
+
         }
     }
 
