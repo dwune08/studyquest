@@ -1,14 +1,21 @@
-import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import LoginComponent from "../../components/user/LoginComponent";
 import JoinComponent from "../../components/user/JoinComponent";
 
 const LoginPage = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // 1. ?tab=join 이 붙어오면 회원가입(false), 없으면 로그인(true) 탭을 기본값으로 지정
-  const isJoinTab = searchParams.get("tab") === "join";
-  const [isLoginTab, setIsLoginTab] = useState(!isJoinTab);
+  // 💡 URL 쿼리 파라미터를 바탕으로 현재 탭 상태를 직접 계산 (useState/useEffect 불필요)
+  const isLoginTab = searchParams.get("tab") !== "join";
+
+  // 탭 변경 시 URL 쿼리 파라미터를 업데이트하는 함수
+  const handleTabChange = (tab) => {
+    if (tab === "join") {
+      setSearchParams({ tab: "join" });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 text-slate-100 font-sans py-10 px-4 selection:bg-blue-500 selection:text-white">
@@ -32,7 +39,7 @@ const LoginPage = () => {
         <div className="grid grid-cols-2 border-b border-slate-800/80 pb-3 shrink-0 relative z-10">
           <button
             type="button"
-            onClick={() => setIsLoginTab(false)}
+            onClick={() => handleTabChange("join")}
             className={`text-base font-bold pb-2 transition-all duration-300 relative ${
               !isLoginTab
                 ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)] cursor-default"
@@ -47,7 +54,7 @@ const LoginPage = () => {
 
           <button
             type="button"
-            onClick={() => setIsLoginTab(true)}
+            onClick={() => handleTabChange("login")}
             className={`text-base font-bold pb-2 transition-all duration-300 relative ${
               isLoginTab
                 ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)] cursor-default"
@@ -61,11 +68,11 @@ const LoginPage = () => {
           </button>
         </div>
 
-        {/* 2. 각 컴포넌트 전환 연결 */}
+        {/* 컴포넌트 전환 */}
         {isLoginTab ? (
           <LoginComponent />
         ) : (
-          <JoinComponent onSuccess={() => setIsLoginTab(true)} />
+          <JoinComponent onSuccess={() => handleTabChange("login")} />
         )}
 
       </div>
