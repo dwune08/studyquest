@@ -33,9 +33,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             return true;
         }
 
-        // 2. 회원가입 및 이메일 중복체크 등 /users 하위 공개 API 제외
-        if (path.startsWith("/users") && !"PATCH".equalsIgnoreCase(method) && !"PUT".equalsIgnoreCase(method)) {
-            // /users/login, /users/refresh 및 POST /users 회원가입 등 허용
+        // 2. 로그인, 토큰 재발급, 회원가입 등 /users 하위 공개 API 및 POST 요청 제외
+        if (path.startsWith("/users")) {
             if (path.equals("/users/login") || path.equals("/users/refresh") || "POST".equalsIgnoreCase(method)) {
                 return true;
             }

@@ -2,7 +2,8 @@ import { useState } from "react";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 
-const QuizRegisterComponent = ({ teacherNo }) => {
+// props로 받던 teacherNo를 내부에서 처리하므로 파라미터는 비워둡니다.
+const QuizRegisterComponent = ({teacherNo}) => {
   const { goQuizList } = useCustomNavigate();
 
   const [form, setForm] = useState({
@@ -42,6 +43,12 @@ const QuizRegisterComponent = ({ teacherNo }) => {
   const submitQuiz = async (e) => {
     e.preventDefault();
 
+    // 4. 전송 전 teacherNo 유효성 검사 추가 (값이 없으면 에러 방지 및 알림)
+    if (!teacherNo) {
+      alert("로그인 정보(교사 번호)를 찾을 수 없습니다. 다시 로그인해 주세요.");
+      return;
+    }
+
     if (!form.quizTitle.trim()) {
       alert("퀴즈 제목을 입력해주세요.");
       return;
@@ -67,7 +74,7 @@ const QuizRegisterComponent = ({ teacherNo }) => {
 
     // 백엔드 QuizDTO 매핑
     const payload = {
-      teacherNo: teacherNo, // 부모에게 받은 Props 사용
+      teacherNo: Number(teacherNo), // 확실하게 숫자로 변환하여 전송
       quizTitle: form.quizTitle,
       quizType: form.quizType,
       quizQuestion: form.quizQuestion,
