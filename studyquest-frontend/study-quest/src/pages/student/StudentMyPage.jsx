@@ -75,8 +75,8 @@ const StudentMyPage = () => {
     statusSpeed: 0,
   };
 
-const currentLevel = currentStatus.statusLevel ?? 1;
-const profileImage = getStudentLevelImage(currentLevel);
+  const currentLevel = currentStatus.statusLevel ?? 1;
+  const profileImage = getStudentLevelImage(currentLevel);
 
   const expPercent =
     currentStatus.nextLevelExp > 0
@@ -161,44 +161,44 @@ const profileImage = getStudentLevelImage(currentLevel);
             <section className="space-y-6">
               <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[220px]">
                 <div
-  className="
-    relative
-    flex
-    h-32
-    w-32
-    items-center
-    justify-center
-    overflow-hidden
-    rounded-2xl
-    border-2
-    border-blue-500/50
-    bg-[#071023]
-    shadow-[0_0_25px_rgba(59,130,246,0.35)]
-  "
->
-  <img
-    src={profileImage}
-    alt={`레벨 ${currentLevel} 학생 프로필`}
-    className="h-full w-full object-contain p-1"
-  />
+                  className="
+                    relative
+                    flex
+                    h-32
+                    w-32
+                    items-center
+                    justify-center
+                    overflow-hidden
+                    rounded-2xl
+                    border-2
+                    border-blue-500/50
+                    bg-[#071023]
+                    shadow-[0_0_25px_rgba(59,130,246,0.35)]
+                  "
+                >
+                  <img
+                    src={profileImage}
+                    alt={`레벨 ${currentLevel} 학생 프로필`}
+                    className="h-full w-full object-contain p-1"
+                  />
 
-  <div
-    className="
-      absolute
-      left-2
-      top-2
-      rounded-md
-      bg-black/60
-      px-2
-      py-1
-      text-[11px]
-      font-bold
-      text-white
-    "
-  >
-    Lv. {currentLevel}
-  </div>
-</div>
+                  <div
+                    className="
+                      absolute
+                      left-2
+                      top-2
+                      rounded-md
+                      bg-black/60
+                      px-2
+                      py-1
+                      text-[11px]
+                      font-bold
+                      text-white
+                    "
+                  >
+                    Lv. {currentLevel}
+                  </div>
+                </div>
 
                 <h3 className="mt-4 text-lg font-bold text-slate-100">
                   {currentStatus.studentName}
@@ -208,7 +208,7 @@ const profileImage = getStudentLevelImage(currentLevel);
                   {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
                 </p>
 
-                {/* ⚙️ 정보 수정 버튼 (3학년 바로 밑에 또렷하게 배치) */}
+                {/* ⚙️ 정보 수정 버튼 */}
                 <button
                   type="button"
                   onClick={handleEditProfile}
@@ -219,6 +219,7 @@ const profileImage = getStudentLevelImage(currentLevel);
 
               </div>
             </section>            
+            
             {/* 오른쪽: 스탯 및 랭킹 영역 */}
             <section className="space-y-6">
               
@@ -268,13 +269,19 @@ const profileImage = getStudentLevelImage(currentLevel);
                 </div>
               </div>
 
-              {/* 주간 랭킹 */}
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6" onClick={goRank}>
+              {/* 주간 랭킹 (호버 효과 및 트랜지션 추가) */}
+              <div 
+                onClick={goRank}
+                className="group rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 cursor-pointer transition-all duration-200 hover:border-blue-500/50 hover:bg-[#0c182e] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] active:scale-[0.99]"
+              >
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 group-hover:text-blue-300 transition-colors">
                     <span>🏆</span> 학년 주간 랭킹
                   </h3>
-                  <span className="text-[11px] font-semibold text-slate-500">TOP 5</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-400 transition-colors">TOP 5</span>
+                    <span className="text-xs text-slate-600 group-hover:text-blue-400 transition-colors">➔</span>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
@@ -282,7 +289,7 @@ const profileImage = getStudentLevelImage(currentLevel);
                     topRankings.map((rankItem) => (
                       <div
                         key={rankItem.studentNo || rankItem.rank}
-                        className="flex items-center justify-between rounded-xl border border-slate-800/60 bg-[#0f1a2e] px-4 py-3 transition hover:border-slate-700"
+                        className="flex items-center justify-between rounded-xl border border-slate-800/60 bg-[#0f1a2e] px-4 py-3 transition group-hover:border-slate-700/80"
                       >
                         <span className="text-sm font-medium text-slate-200">
                           {getRankBadge(rankItem.rank)} {rankItem.studentName}
