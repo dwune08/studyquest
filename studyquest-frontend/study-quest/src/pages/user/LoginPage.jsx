@@ -1,11 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate"; // 👈 커스텀 훅 경로 확인
+import { useSearchParams } from "react-router-dom";
 
 const LoginPage = () => {
   // 커스텀 훅에서 필요한 이동 함수들 추출
   const { goStudentMyPage } = useCustomNavigate(); 
-  const [isLoginTab, setIsLoginTab] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isJoinFromUrl = searchParams.get("tab") === "join";
+  const [isLoginTab, setIsLoginTab] = useState(!isJoinFromUrl);
 
   const [formData, setFormData] = useState({
     userType: 'student',
@@ -304,7 +307,7 @@ const LoginPage = () => {
             type="submit"
             className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-widest rounded-xl transition-all duration-200 shadow-[0_4px_20px_rgba(37,99,235,0.4)] active:scale-[0.98] cursor-pointer border border-blue-400/30 shrink-0 mt-auto"
           >
-            {isLoginTab ? '로그인 입장' : '퀘스트 시작하기'}
+            {isLoginTab ? '⚔️ 모험 시작하기' : formData.userType === "student" ? '🗡️ 모험가 등록' : '👑 길드 마스터 등록'}
           </button>
         </form>
       </div>
