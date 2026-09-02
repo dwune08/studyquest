@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -32,17 +33,15 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             return true;
         }
 
-        // 2. 회원가입 요청 제외 (POST /users)
-        if (path.equals("/users") && "POST".equalsIgnoreCase(method)) {
-            return true;
+        // 2. 회원가입 및 이메일 중복체크 등 /users 하위 공개 API 제외
+        if (path.startsWith("/users") && !"PATCH".equalsIgnoreCase(method) && !"PUT".equalsIgnoreCase(method)) {
+            // /users/login, /users/refresh 및 POST /users 회원가입 등 허용
+            if (path.equals("/users/login") || path.equals("/users/refresh") || "POST".equalsIgnoreCase(method)) {
+                return true;
+            }
         }
 
-        // 3. 로그인 및 토큰 재발급 요청 제외
-        if (path.equals("/users/login") || path.equals("/users/refresh")) {
-            return true;
-        }
-
-        // 4. Swagger UI 및 API 문서 경로 제외
+        // 3. Swagger UI 및 API 문서 경로 제외
         if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
             return true;
         }
@@ -60,6 +59,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         // Authorization 헤더 검증
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.warn("Authorization 헤더가 없거나 Bearer 형식이 아닙니다.");
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Access Token이 존재하지 않습니다.");
             return;
         }
@@ -70,20 +70,29 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             // JWT 검증 및 Claims 추출
             Map<String, Object> claims = JWTUtil.validateToken(accessToken);
 
-            // Claims 데이터 파싱
-            Long userNo = ((Number) claims.get("userNo")).longValue();
+            // Claims 데이터 안전 파sing (NPE 방지)
+            Object userNoObj = claims.get("userNo");
+            Object userTypeObj = claims.get("userType");
+
+            if (userNoObj == null) {
+                throw new JwtException("Claim에 userNo 정보가 없습니다.");
+            }
+
+            Long userNo = ((Number) userNoObj).longValue();
             String userEmail = (String) claims.get("userEmail");
             String userName = (String) claims.get("userName");
-            Integer userType = ((Number) claims.get("userType")).intValue();
+            Integer userType = userTypeObj != null ? ((Number) userTypeObj).intValue() : 1;
 
             @SuppressWarnings("unchecked")
-            List<String> roleNames = (List<String>) claims.get("roleNames");
+            List<String> roleNames = claims.get("roleNames") != null
+                    ? (List<String>) claims.get("roleNames")
+                    : Collections.emptyList();
 
             // UserDTO 인증 객체 생성
             UserDTO userDTO = new UserDTO(
                     userNo,
                     userEmail,
-                    "", // SecurityContext 내부용 패스워드는 빈값
+                    "",
                     userName,
                     userType,
                     roleNames
@@ -93,7 +102,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDTO,
                     null,
-                    userDTO.getAuthorities()
+                    userDTO.getAuthorities() // UserDTO 내부 getAuthorities()의 GrantedAuthority 변환 로직 체크 필요
             );
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -105,8 +114,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         } catch (ExpiredJwtException e) {
             log.warn("Access Token 만료: {}", e.getMessage());
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "EXPIRED_ACCESS_TOKEN");
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("JWT 검증 실패: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("JWT 검증 실패 [{}]: {}", e.getClass().getSimpleName(), e.getMessage());
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "INVALID_ACCESS_TOKEN");
         }
     }
