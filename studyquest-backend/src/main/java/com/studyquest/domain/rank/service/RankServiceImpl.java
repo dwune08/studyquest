@@ -21,25 +21,26 @@ public class RankServiceImpl implements RankService {
     private final RankRepository rankRepository;
 
     @Override
-    public PageResponseDTO<RankDTO> getRankings(PageRequestDTO pageRequestDTO, Long loginStudentNo) {
+    public PageResponseDTO<RankDTO> getRankings(PageRequestDTO pageRequestDTO, Long loginStudentNo, boolean isInitialRequest) {
 
         int targetPage = pageRequestDTO.getPage();
 
-        // 1. 로그인한 학생이 존재하고, 별도의 페이지 지정 없이 최초 진입(page == 1)한 경우
-        if (loginStudentNo != null && targetPage == 1) {
+        // 1. 최초 진입 시 내 랭킹 위치 자동 계산
+        if (isInitialRequest && loginStudentNo != null) {
             Integer myRank = rankRepository.findMyRank(loginStudentNo);
 
             if (myRank != null && myRank > 0) {
-                // 내 순위가 속한 페이지 자동 계산 (예: 15위, size=10 -> 2페이지)
                 targetPage = (int) Math.ceil((double) myRank / pageRequestDTO.getSize());
-                pageRequestDTO.setPage(targetPage);
             }
         }
+
+        // 💡 핵심: 공통 DTO인 pageRequestDTO의 page 속성을 계산된 targetPage로 변경
+        pageRequestDTO.setPage(targetPage);
 
         // 2. Pageable 변환 (0-index 기반)
         Pageable pageable = PageRequest.of(targetPage - 1, pageRequestDTO.getSize());
 
-        // 3. DB 조회 및 순위(rank) 동적 부여
+        // 3. DB 조회 및 순위 동적 부여
         Page<RankDTO> rankPage = rankRepository.findRanking(pageable);
         int startRank = (targetPage - 1) * pageRequestDTO.getSize() + 1;
 
@@ -48,7 +49,7 @@ public class RankServiceImpl implements RankService {
             dtoList.get(i).setRank(startRank + i);
         }
 
-        // 4. PageResponseDTO 생성 반환
+        // 4. 공통 생성자 그대로 호출 (pageRequestDTO.getPage()가 targetPage인 11을 반환함)
         return new PageResponseDTO<>(dtoList, pageRequestDTO, rankPage.getTotalElements());
     }
 }

@@ -5,6 +5,7 @@ import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import com.studyquest.domain.rank.dto.RankDTO;
 import com.studyquest.domain.rank.service.RankService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,19 +15,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/ranks") // 명세서 기준 복수형 URI 적용
+@RequestMapping("/ranks")
 public class RankController {
 
     private final RankService rankService;
 
-    // GET /ranks
     @GetMapping
     public ResponseEntity<PageResponseDTO<RankDTO>> getRanking(
             PageRequestDTO pageRequestDTO,
-            @AuthenticationPrincipal UserDTO userDTO
-            ) {
+            @AuthenticationPrincipal UserDTO userDTO,
+            HttpServletRequest request
+    ) {
         Long loginStudentNo = userDTO.getUserNo();
-        PageResponseDTO<RankDTO> response = rankService.getRankings(pageRequestDTO, loginStudentNo);
+
+        // 💡 핵심: Spring의 기본값 바인딩을 피하기 위해 원본 QueryString을 직접 확인합니다.
+        // /ranks?size=6 -> queryString: "size=6" (page 없음 -> isInitialRequest = true)
+        // /ranks?page=1&size=6 -> queryString: "page=1&size=6" (page 있음 -> isInitialRequest = false)
+        String queryString = request.getQueryString();
+        boolean isInitialRequest = (queryString == null || !queryString.contains("page="));
+
+        PageResponseDTO<RankDTO> response = rankService.getRankings(pageRequestDTO, loginStudentNo, isInitialRequest);
         return ResponseEntity.ok(response);
     }
 }

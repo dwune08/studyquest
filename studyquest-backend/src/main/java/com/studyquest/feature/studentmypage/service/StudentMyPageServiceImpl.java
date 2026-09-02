@@ -51,7 +51,7 @@ public class StudentMyPageServiceImpl implements StudentMyPageService {
         List<RankDTO> topRankings = Collections.emptyList();
         try {
             PageRequestDTO pageRequestDTO = new PageRequestDTO(1, 5);
-            PageResponseDTO<RankDTO> rankResponse = rankService.getRankings(pageRequestDTO, realStudentNo);
+            PageResponseDTO<RankDTO> rankResponse = rankService.getRankings(pageRequestDTO, realStudentNo, false);
             if (rankResponse != null && rankResponse.getDtoList() != null) {
                 topRankings = rankResponse.getDtoList();
             }
