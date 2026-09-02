@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import jwtAxios from "../../api/jwtAxios"; // 프로젝트 구조에 맞게 경로 확인
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import BasicLayout from "../../layouts/BasicLayout";
+import { getStudentLevelImage } from "../../utils/studentLevelImage";
 
 const StudentMyPage = () => {
   const [status, setStatus] = useState(null);
@@ -65,6 +66,9 @@ const StudentMyPage = () => {
     statusWisdom: 0,
     statusSpeed: 0,
   };
+
+const currentLevel = currentStatus.statusLevel ?? 1;
+const profileImage = getStudentLevelImage(currentLevel);
 
   const expPercent =
     currentStatus.nextLevelExp > 0
@@ -148,9 +152,45 @@ const StudentMyPage = () => {
             {/* 왼쪽: 프로필 아바타 */}
             <section className="space-y-6">
               <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[220px]">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-5xl shadow-[0_0_25px_rgba(59,130,246,0.35)] ring-4 ring-blue-500/20">
-                  👩
-                </div>
+                <div
+  className="
+    relative
+    flex
+    h-32
+    w-32
+    items-center
+    justify-center
+    overflow-hidden
+    rounded-2xl
+    border-2
+    border-blue-500/50
+    bg-[#071023]
+    shadow-[0_0_25px_rgba(59,130,246,0.35)]
+  "
+>
+  <img
+    src={profileImage}
+    alt={`레벨 ${currentLevel} 학생 프로필`}
+    className="h-full w-full object-contain p-1"
+  />
+
+  <div
+    className="
+      absolute
+      left-2
+      top-2
+      rounded-md
+      bg-black/60
+      px-2
+      py-1
+      text-[11px]
+      font-bold
+      text-white
+    "
+  >
+    Lv. {currentLevel}
+  </div>
+</div>
 
                 <h3 className="mt-4 text-lg font-bold text-slate-100">
                   {currentStatus.studentName}
