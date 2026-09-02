@@ -92,7 +92,24 @@ const LoginPage = () => {
 
       } catch (error) {
         console.error("회원가입 에러:", error);
-        alert(error.response?.data?.message || "회원가입 실패: 입력 정보를 다시 확인해주세요.");
+
+        // 1. DTO 유효성 검사 에러 등, 백엔드에서 에러 메시지를 명확히 보내준 경우
+        if (error.response && error.response.data && error.response.data.message) {
+          
+          // (선택) 모든 에러를 한 번에 다 보여주고 싶다면 아래 주석을 해제해서 사용하세요.
+          // if (error.response.data.errors) {
+          //   const allMessages = Object.values(error.response.data.errors).join('\n');
+          //   alert(allMessages);
+          //   return;
+          // }
+
+          alert(error.response.data.message); 
+          // 결과 예시: "비밀번호는 영문, 숫자 포함 8자 이상이어야 합니다."
+        } 
+        // 2. 서버가 다운되었거나 응답이 없는 경우
+        else {
+          alert("회원가입 실패: 서버와의 통신에 문제가 발생했습니다. 다시 시도해주세요.");
+        }
       }
     }
   };
