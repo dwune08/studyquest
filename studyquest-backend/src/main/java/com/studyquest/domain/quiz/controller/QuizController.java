@@ -49,6 +49,7 @@ public class QuizController {
      * GET /quizzes/{quizNo}
      */
     @GetMapping("/{quizNo}")
+
     public ResponseEntity<QuizDTO> getQuiz(@PathVariable("quizNo") Long quizNo) {
         QuizDTO quiz = quizService.getQuiz(quizNo);
         return ResponseEntity.ok(quiz);
