@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 
 const LoginPage = () => {
   // 커스텀 훅에서 필요한 이동 함수들 추출
-  const { goStudentMyPage } = useCustomNavigate(); 
+  const { goStudentMyPage, goTeacherPage } = useCustomNavigate(); 
   const [searchParams] = useSearchParams();
   const isJoinFromUrl = searchParams.get("tab") === "join";
   const [isLoginTab, setIsLoginTab] = useState(!isJoinFromUrl);
@@ -61,6 +61,7 @@ const LoginPage = () => {
         if (userType === 1) {
           goStudentMyPage(); // 👈 커스텀 훅 함수 사용
         } else if (userType === 2) {
+          goTeacherPage();
           // 필요 시 useCustomNavigate에 goTeacherDashboard 추가 후 호출
         } else {
           // 필요 시 useCustomNavigate에 goMain 추가 후 호출
