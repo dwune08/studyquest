@@ -9,7 +9,7 @@ const StudentMyPage = () => {
   const [loading, setLoading] = useState(true);
   const [warningMessage, setWarningMessage] = useState("");
 
-  const { goLogin, goModify } = useCustomNavigate();
+  const { goLogin, goModify, goRank } = useCustomNavigate();
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,6 +57,10 @@ const StudentMyPage = () => {
       goModify();
     }
   };
+
+  const handleGoRank = () => {
+    goRank();
+  }
 
   const currentStatus = status || {
     memberNo: null,
@@ -220,7 +224,7 @@ const StudentMyPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
+              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6" onClick={handleGoRank}>
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                     <span>🏆</span> 학년 주간 랭킹
