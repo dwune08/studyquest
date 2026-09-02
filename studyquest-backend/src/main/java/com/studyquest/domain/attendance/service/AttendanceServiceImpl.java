@@ -1,6 +1,5 @@
 package com.studyquest.domain.attendance.service;
 
-import com.studyquest.domain.attendance.dto.AttendanceCheckResponseDTO;
 import com.studyquest.domain.attendance.dto.AttendanceDTO;
 import com.studyquest.domain.attendance.entity.Attendance;
 import com.studyquest.domain.attendance.repository.AttendanceRepository;
@@ -24,19 +23,26 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final StudentRepository studentRepository;
     private final StatusRepository statusRepository;
 
-    private static final int ATTENDANCE_REWARD_EXP = 20; // 출석 시 지급할 경험치
-
     @Override
     public AttendanceDTO getMyAttendance(Long studentNo) {
         Attendance attendance = attendanceRepository.findById(studentNo)
                 .orElseGet(() -> createInitialAttendance(studentNo));
 
+        LocalDate today = LocalDate.now();
+
+        boolean isConsecutive = (attendance.getAttendanceRecent() != null)
+                && (attendance.getAttendanceRecent().equals(today.minusDays(1))
+                || attendance.getAttendanceRecent().equals(today));
+
+        int displayWeeklyCount = isConsecutive ? attendance.getAttendanceWeeklyCount() : 0;
+
         boolean checkedToday = attendance.getAttendanceRecent() != null
-                && attendance.getAttendanceRecent().equals(LocalDate.now());
+                && attendance.getAttendanceRecent().equals(today);
 
         return AttendanceDTO.builder()
                 .studentNo(attendance.getStudentNo())
                 .attendanceDays(attendance.getAttendanceDays())
+                .attendanceWeeklyCount(displayWeeklyCount)
                 .attendanceRecent(attendance.getAttendanceRecent())
                 .checkedToday(checkedToday)
                 .build();
@@ -44,31 +50,39 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public AttendanceCheckResponseDTO doCheckIn(Long studentNo) {
+    public AttendanceDTO doCheckIn(Long studentNo) {
         LocalDate today = LocalDate.now();
 
         Attendance attendance = attendanceRepository.findById(studentNo)
                 .orElseGet(() -> createInitialAttendance(studentNo));
 
-        // 이미 오늘 출석을 진행한 경우 예외 처리
         if (attendance.getAttendanceRecent() != null && attendance.getAttendanceRecent().equals(today)) {
             throw new IllegalStateException("오늘은 이미 출석 체크를 완료했습니다.");
         }
 
-        // 1. 출석 카운트 증가 및 날짜 업데이트
-        attendance.checkIn(today);
+        // 1. 출석 처리 및 보상 EXP 계산 (+10 또는 +50)
+        int rewardExp = attendance.checkIn(today);
 
-        // 2. 출석 보상 경험치 부여 (Status 연동)
-        Status status = statusRepository.findById(studentNo)
-                .orElseThrow(() -> new IllegalArgumentException("학생의 스탯 정보를 찾을 수 없습니다. studentNo = " + studentNo));
+        // 2. Student 조회 -> 객체 탐색으로 Status 접근하여 경험치 부여
+        Student student = studentRepository.findById(studentNo)
+                .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다. studentNo = " + studentNo));
 
-        status.addExp(ATTENDANCE_REWARD_EXP);
+        Status status = student.getStatus();
+        if (status == null) {
+            throw new IllegalStateException("학생의 스탯 정보가 존재하지 않습니다.");
+        }
 
-        return AttendanceCheckResponseDTO.builder()
-                .success(true)
-                .message("출석 체크가 완료되었습니다!")
-                .totalAttendanceDays(attendance.getAttendanceDays())
-                .rewardExp(ATTENDANCE_REWARD_EXP)
+        // Status 엔티티 내 레벨업 감지 로직(addExp) 실행
+        status.addExp(rewardExp);
+
+        // 3. 최신 출석 및 스탯 정보 반환
+        return AttendanceDTO.builder()
+                .studentNo(attendance.getStudentNo())
+                .attendanceDays(attendance.getAttendanceDays())
+                .attendanceWeeklyCount(attendance.getAttendanceWeeklyCount())
+                .attendanceRecent(attendance.getAttendanceRecent())
+                .checkedToday(true)
+                .rewardExp(rewardExp)
                 .updatedStatus(StatusDTO.fromEntity(status))
                 .build();
     }

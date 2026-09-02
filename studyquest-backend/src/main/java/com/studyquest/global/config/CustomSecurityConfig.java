@@ -54,8 +54,8 @@ public class CustomSecurityConfig {
                         // 2. 마이페이지 및 학생 정보 관련 API 권한 부여 (추가됨 ⭐️)
                         .requestMatchers("/mypage/**", "/student/**", "/status/**", "/event/**").hasRole("STUDENT")
 
-                        // 3. 랭킹 API
-                        .requestMatchers(HttpMethod.GET, "/ranks/**").authenticated()
+                        // 3. 랭킹, 출석 API
+                        .requestMatchers("/ranks", "/ranks/**", "/event", "/event/**").authenticated()
 
                         // 4. 선생님 전용 API (퀴즈 생성/수정/삭제)
                         .requestMatchers("/teacher/**").hasRole("TEACHER")
