@@ -12,6 +12,7 @@ export const useCustomNavigate = () => {
         navigate("/users/login");
       }
     },
+    goModify: () => navigate("/users/:no/modify"),
     goQuizList: () => navigate("/quizzes"),
     goQuizRegister: () => navigate("/quizzes/register"),
     goEvent: () => navigate("/event"),
