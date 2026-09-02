@@ -18,6 +18,15 @@ const quizRouter = () => {
         return { Component };
       },
     },
+    // 퀴즈 결과 페이지
+    {
+      path: ":no/result",
+      HydrateFallback: () => <div>Loading...</div>,
+      lazy: async () => {
+        const { default: Component } = await import("../pages/quiz/QuizResultPage");
+        return { Component };
+      },
+    },
     // 퀴즈 등록 페이지 (/quizzes/register)
     {
       path: "register",

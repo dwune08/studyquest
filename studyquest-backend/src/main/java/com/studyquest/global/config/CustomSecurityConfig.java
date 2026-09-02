@@ -63,7 +63,7 @@ public class CustomSecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")
 
                         // 5. 학생/선생님 공용 조회 API
-                        .requestMatchers(HttpMethod.GET, "/quizzes/**", "/results/**", "/teachers/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/quizzes", "/quizzes/**", "/results/**", "/teachers/**").authenticated()
 
                         // 6. 결과 제출 (/results)
                         .requestMatchers(HttpMethod.POST, "/results").hasRole("STUDENT")

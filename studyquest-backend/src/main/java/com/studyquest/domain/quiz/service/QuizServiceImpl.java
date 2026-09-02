@@ -1,134 +1,110 @@
 package com.studyquest.domain.quiz.service;
 
-import com.studyquest.domain.quiz.entity.Choices;
-import com.studyquest.domain.quiz.repository.ChoicesRepository;
 import com.studyquest.domain.quiz.dto.QuizDTO;
-import com.studyquest.domain.quiz.dto.QuizRequestDTO;
-import com.studyquest.domain.quiz.dto.StudentQuizDTO;
+import com.studyquest.domain.quiz.entity.Choices;
 import com.studyquest.domain.quiz.entity.Quiz;
-import com.studyquest.domain.quiz.exception.QuizNotFoundException;
 import com.studyquest.domain.quiz.repository.QuizRepository;
+import com.studyquest.global.dto.PageRequestDTO;
+import com.studyquest.global.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
-    private final ChoicesRepository choicesRepository;
 
-    // 퀴즈 등록
+    // QuizServiceImpl.java
     @Override
-    @Transactional
-    public QuizDTO createQuiz(QuizRequestDTO requestDTO) {
+    public PageResponseDTO<QuizDTO> getQuizList(PageRequestDTO pageRequestDTO, Integer quizType, Long teacherNo) {
+        Pageable pageable = pageRequestDTO.getPageable("quizNo");
 
-        Quiz quiz = Quiz.builder()
-                .teacherNo(requestDTO.getTeacherNo())
-                .quizTitle(requestDTO.getQuizTitle())
-                .quizType(requestDTO.getQuizType())
-                .quizQuestion(requestDTO.getQuizQuestion())
-                .quizAnswer(requestDTO.getQuizAnswer())
-                .build();
+        Page<Quiz> result = quizRepository.findAllWithFilters(
+                quizType,
+                teacherNo,
+                pageRequestDTO.getSearchType(),
+                pageRequestDTO.getKeyword(),
+                pageable
+        );
 
-        Quiz savedQuiz = quizRepository.save(quiz);
+        List<QuizDTO> dtoList = result.getContent().stream()
+                .map(quiz -> QuizDTO.fromEntity(quiz, quiz.getChoices()))
+                .toList();
 
-        Choices choices = Choices.builder()
-                .quiz(savedQuiz)
-                .choice1(requestDTO.getChoice1())
-                .choice2(requestDTO.getChoice2())
-                .choice3(requestDTO.getChoice3())
-                .choice4(requestDTO.getChoice4())
-                .choice5(requestDTO.getChoice5())
-                .build();
-
-        Choices savedChoices = choicesRepository.save(choices);
-
-        return QuizDTO.fromEntity(savedQuiz, savedChoices);
+        return new PageResponseDTO<>(dtoList, pageRequestDTO, result.getTotalElements());
     }
 
-    // 퀴즈 상세 조회 (선생님 전용)
     @Override
     public QuizDTO getQuiz(Long quizNo) {
-
-        Quiz quiz = quizRepository.findById(quizNo)
-                .orElseThrow(() -> new QuizNotFoundException(quizNo));
+        Quiz quiz = quizRepository.findByQuizNo(quizNo)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 퀴즈입니다. quizNo=" + quizNo));
 
         return QuizDTO.fromEntity(quiz, quiz.getChoices());
     }
 
-    // 선생님별 퀴즈 목록 조회
-    @Override
-    public List<QuizDTO> getQuizList(Long teacherNo) {
-
-        List<Quiz> quizList = quizRepository.findByTeacherNoOrderByQuizNoDesc(teacherNo);
-
-        return quizList.stream()
-                .map(quiz -> QuizDTO.fromEntity(quiz, quiz.getChoices()))
-                .toList();
-    }
-
-    // 퀴즈 수정
     @Override
     @Transactional
-    public QuizDTO updateQuiz(Long quizNo, QuizRequestDTO requestDTO, Long loginTeacherNo) {
+    public QuizDTO createQuiz(QuizDTO quizDTO) {
+        Quiz quiz = Quiz.builder()
+                .teacherNo(quizDTO.getTeacherNo())
+                .quizTitle(quizDTO.getQuizTitle())
+                .quizType(quizDTO.getQuizType())
+                .quizQuestion(quizDTO.getQuizQuestion())
+                .quizAnswer(quizDTO.getQuizAnswer())
+                .build();
 
-        Quiz quiz = quizRepository.findById(quizNo)
-                .orElseThrow(() -> new QuizNotFoundException(quizNo));
+        Choices choices = Choices.builder()
+                .quiz(quiz)
+                .choice1(quizDTO.getChoice1())
+                .choice2(quizDTO.getChoice2())
+                .choice3(quizDTO.getChoice3())
+                .choice4(quizDTO.getChoice4())
+                .choice5(quizDTO.getChoice5())
+                .build();
 
-        // 본인 퀴즈 소유권 검증
-        if (!quiz.getTeacherNo().equals(loginTeacherNo)) {
-            throw new AccessDeniedException("본인이 작성한 퀴즈만 수정할 수 있습니다.");
-        }
+        Quiz savedQuiz = quizRepository.save(quiz);
+        return QuizDTO.fromEntity(savedQuiz, choices);
+    }
 
-        quiz.changeTitle(requestDTO.getQuizTitle());
-        quiz.changeType(requestDTO.getQuizType());
-        quiz.changeQuestion(requestDTO.getQuizQuestion());
-        quiz.changeAnswer(requestDTO.getQuizAnswer());
+    @Override
+    @Transactional
+    public QuizDTO updateQuiz(Long quizNo, QuizDTO quizDTO) {
+        Quiz quiz = quizRepository.findByQuizNo(quizNo)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 퀴즈입니다. quizNo=" + quizNo));
+
+        quiz.changeTitle(quizDTO.getQuizTitle());
+        quiz.changeQuestion(quizDTO.getQuizQuestion());
+        quiz.changeType(quizDTO.getQuizType());
+        quiz.changeAnswer(quizDTO.getQuizAnswer());
 
         Choices choices = quiz.getChoices();
-        if (choices == null) {
-            choices = choicesRepository.findById(quizNo)
-                    .orElseThrow(() -> new IllegalArgumentException("선택지 정보를 찾을 수 없습니다. quizNo = " + quizNo));
+        if (choices != null) {
+            choices.changeChoice1(quizDTO.getChoice1());
+            choices.changeChoice2(quizDTO.getChoice2());
+            choices.changeChoice3(quizDTO.getChoice3());
+            choices.changeChoice4(quizDTO.getChoice4());
+            choices.changeChoice5(quizDTO.getChoice5());
         }
-
-        choices.changeChoice1(requestDTO.getChoice1());
-        choices.changeChoice2(requestDTO.getChoice2());
-        choices.changeChoice3(requestDTO.getChoice3());
-        choices.changeChoice4(requestDTO.getChoice4());
-        choices.changeChoice5(requestDTO.getChoice5());
 
         return QuizDTO.fromEntity(quiz, choices);
     }
 
-    // 퀴즈 삭제
     @Override
     @Transactional
-    public void deleteQuiz(Long quizNo, Long loginTeacherNo) {
-
-        Quiz quiz = quizRepository.findById(quizNo)
-                .orElseThrow(() -> new QuizNotFoundException(quizNo));
-
-        // 본인 퀴즈 소유권 검증
-        if (!quiz.getTeacherNo().equals(loginTeacherNo)) {
-            throw new AccessDeniedException("본인이 작성한 퀴즈만 삭제할 수 있습니다.");
-        }
+    public void deleteQuiz(Long quizNo) {
+        Quiz quiz = quizRepository.findByQuizNo(quizNo)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 퀴즈입니다. quizNo=" + quizNo));
 
         quizRepository.delete(quiz);
     }
 
-    // 퀴즈 상세 조회 (학생 전용)
-    @Override
-    public StudentQuizDTO getStudentQuiz(Long quizNo) {
-
-        Quiz quiz = quizRepository.findById(quizNo)
-                .orElseThrow(() -> new QuizNotFoundException(quizNo));
-
-        return StudentQuizDTO.fromEntity(quiz, quiz.getChoices());
-    }
 }
