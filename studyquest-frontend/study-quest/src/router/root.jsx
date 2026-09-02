@@ -53,7 +53,7 @@ const root = createBrowserRouter([
 
   // 학생 마이페이지 (고정 경로 및 파라미터 경로 모두 대응)
   {
-    path: "/student/mypage",
+    path: "/student",
     HydrateFallback: () => <div>Loading...</div>,
     lazy: async () => {
       const { default: Component } = await import("../pages/student/StudentMyPage");

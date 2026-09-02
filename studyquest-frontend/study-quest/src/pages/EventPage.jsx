@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import BasicLayout from "../layouts/BasicLayout";
 
 // 퀘스트 출석 보상 데이터
 const INITIAL_REWARDS = [
-  { day: 1, exp: 100, label: "일반 출석", icon: "📖", isClaimed: false },
-  { day: 2, exp: 150, label: "연속 출석", icon: "✍️", isClaimed: false },
-  { day: 3, exp: 200, label: "열공 부스터", icon: "🔥", isClaimed: false },
-  { day: 4, exp: 250, label: "중간 달성", icon: "🛡️", isClaimed: false },
-  { day: 5, exp: 300, label: "집중력 폭발", icon: "⚡", isClaimed: false },
-  { day: 6, exp: 400, label: "스퍼트 완료", icon: "⚔️", isClaimed: false },
-  { day: 7, exp: 1000, label: "주간 완주 보너스", icon: "👑", isClaimed: false },
+  { day: 1, exp: 10, label: "모험의 시작", icon: "📖", isClaimed: false },
+  { day: 2, exp: 10, label: "탐험가 습관", icon: "✍️", isClaimed: false },
+  { day: 3, exp: 10, label: "열정의 불꽃", icon: "🔥", isClaimed: false },
+  { day: 4, exp: 10, label: "강철의 의지", icon: "🛡️", isClaimed: false },
+  { day: 5, exp: 10, label: "한계 돌파", icon: "⚡", isClaimed: false },
+  { day: 6, exp: 10, label: "전사의 결의", icon: "⚔️", isClaimed: false },
+  { day: 7, exp: 50, label: "전설의 완주자", icon: "👑", isClaimed: false },
 ];
 
 const EventPage = () => {
