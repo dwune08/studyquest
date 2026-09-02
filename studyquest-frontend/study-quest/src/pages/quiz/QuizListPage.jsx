@@ -1,247 +1,219 @@
 import { useEffect, useState } from "react";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
-import BasicLayout from "../../layouts/BasicLayout";
 
-const StudentMyPage = () => {
-  const [status, setStatus] = useState(null);
-  const [topRankings, setTopRankings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [warningMessage, setWarningMessage] = useState("");
+const CATEGORIES = [
+  { id: 0, name: "5지선다 퀴즈", desc: "객관식 문제를 풀고 포인트를 획득하세요", icon: "📝" },
+  { id: 1, name: "빈칸채우기 퀴즈", desc: "알맞은 단어를 채워넣는 퀴즈입니다", icon: "✏️" },
+  { id: 2, name: "O/X 퀴즈", desc: "참과 거짓을 빠르게 판단하세요", icon: "⭕" },
+];
 
-  const { goLogin, goQuizList, goEvent } = useCustomNavigate();
+const QuizListPage = () => {
+  // null이면 카테고리 선택 화면, 숫자(0,1,2)면 해당 퀴즈 목록 화면
+  const [selectedType, setSelectedType] = useState(null); 
+  const [quizzes, setQuizzes] = useState([]);
+  const [pageInfo, setPageInfo] = useState({
+    currentPage: 1,
+    totalPage: 1,
+    pageNumberList: [],
+    prev: false,
+    next: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const loadData = async () => {
+  const { goStudentMyPage, goQuizDetail } = useCustomNavigate();
+
+  const fetchQuizzes = async (type, page = 1) => {
+    try {
       setLoading(true);
-      setWarningMessage("");
+      setError(null);
 
-      try {
-        const res = await jwtAxios.get("/mypage/me");
-        if (res.data) {
-          setStatus(res.data.status);
-          setTopRankings(res.data.topRankings || []);
-        }
-      } catch (error) {
-        console.error("마이페이지 데이터 조회 실패:", error);
-        setWarningMessage("데이터를 불러오는 데 실패했습니다. 기본 정보가 표시됩니다.");
+      // 쿼리 파라미터 객체 생성 (type이 null이거나 undefined가 아닐 때만 포함)
+      const params = {
+        page: page,
+        size: 5,
+      };
 
-        const storedUserInfo = localStorage.getItem("userInfo");
-        if (storedUserInfo) {
-          const userInfo = JSON.parse(storedUserInfo);
-          setStatus({
-            studentName: userInfo.userName || userInfo.name || "모험가",
-            studentEmail: userInfo.userEmail || userInfo.email || "-",
-            studentGrade: userInfo.studentGrade || userInfo.grade || "-",
-          });
-        }
-      } finally {
-        setLoading(false);
+      if (type !== null && type !== undefined && type !== "") {
+        params.quizType = type;
       }
-    };
 
-    loadData();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    goLogin();
+      // jwtAxios의 params 옵션을 활용하면 null 파라미터 문제를 방지할 수 있습니다.
+      const res = await jwtAxios.get("/quizzes", { params });
+      
+      setQuizzes(res.data.dtoList || []);
+      setPageInfo({
+        currentPage: res.data.currentPage,
+        totalPage: res.data.totalPage,
+        pageNumberList: res.data.pageNumberList || [],
+        prev: res.data.prev,
+        next: res.data.next,
+      });
+    } catch (err) {
+      console.error("퀴즈 목록 로딩 실패:", err);
+      setError("퀴즈 목록을 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const currentStatus = status || {
-    studentName: "모험가",
-    studentEmail: "이메일 정보 없음",
-    studentGrade: "-",
-    statusLevel: 1,
-    statusExp: 0,
-    nextLevelExp: 100,
-    statusAttack: 0,
-    statusWisdom: 0,
-    statusSpeed: 0,
+  // 카테고리가 선택되었을 때만 API 호출
+  useEffect(() => {
+  const loadData = async () => {
+    await fetchQuizzes(selectedType, 1);
+  };
+  loadData();
+}, [selectedType]);
+
+  const handleCategorySelect = (type) => {
+    setSelectedType(type);
   };
 
-  const expPercent =
-    currentStatus.nextLevelExp > 0
-      ? Math.min(
-          (currentStatus.statusExp / currentStatus.nextLevelExp) * 100,
-          100
-        )
-      : 0;
+  const handlePageChange = (page) => {
+    fetchQuizzes(selectedType, page);
+  };
 
-  const getRankBadge = (rank) => {
-    if (rank === 1) return "🥇";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
-    return `${rank}위`;
+  const getCategoryTitle = (type) => {
+    return CATEGORIES.find((c) => c.id === type)?.name || "퀴즈";
   };
 
   return (
-    <BasicLayout>
-      <div className="w-full max-w-5xl mx-auto px-4 py-4 text-white flex flex-col justify-start">
-        
-        {/* 이미지와 동일한 상단 헤더 문구 영역 */}
-        <div className="mb-8 text-center flex flex-col items-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-500/40 text-[11px] font-bold text-blue-300 tracking-wider mb-3 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
-            ⚔️ CHARACTER STATUS
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">
-            모험가 프로필
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 font-medium">
-            현재 달성한 능력치와 학년 주간 랭킹을 확인하세요!
-          </p>
+    <div className="min-h-screen bg-[#020617] px-6 py-10 text-white">
+      <div className="mx-auto max-w-5xl">
+        {/* 상단 Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-black tracking-[0.2em]">🗡️ STUDY:QUEST</h1>
+          <p className="mt-3 text-blue-400">QUIZ DUNGEON</p>
+          <h2 className="mt-2 text-2xl font-bold">퀴즈 던전</h2>
         </div>
 
-        {/* 에러/경고 안내 배너 */}
-        {warningMessage && (
-          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-xs sm:text-sm text-amber-300">
-            ⚠️ {warningMessage}
-          </div>
-        )}
-
-        {/* 로딩 인디케이터 */}
-        {loading && (
-          <div className="mb-3 text-center text-xs text-blue-400">
-            최신 데이터를 동기화 중입니다...
-          </div>
-        )}
-
-        {/* 메인 프로필/스탯 카드 */}
-        <div className="rounded-3xl border border-slate-800 bg-[#0f1a2e]/90 p-6 sm:p-8 shadow-[0_0_40px_rgba(37,99,235,0.12)] backdrop-blur-sm">
-          
-          <header className="flex flex-col gap-6 border-b border-slate-800 pb-6 md:flex-row md:items-center">
+        {/* Main Content Box */}
+        <div className="rounded-3xl border border-slate-700 bg-[#0f1a2e] p-8 shadow-[0_0_40px_rgba(37,99,235,0.12)]">
+          <div className="mb-7 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-blue-400">STUDENT PROFILE</p>
-              <h2 className="mt-1 text-2xl font-black text-slate-100">
-                Lv.{currentStatus.statusLevel} {currentStatus.studentName}
-              </h2>
-              <p className="mt-1 text-xs text-slate-400">
-                {currentStatus.studentEmail || "이메일 정보 없음"}
-              </p>
+              <p className="text-sm text-blue-400">QUEST LIST</p>
+              <h3 className="mt-1 text-2xl font-bold">
+                {selectedType === null
+                  ? "도전할 퀴즈 카테고리를 선택하세요"
+                  : `${getCategoryTitle(selectedType)} 목록`}
+              </h3>
             </div>
 
-            <div className="flex-1 md:px-8">
-              <div className="mb-2 flex justify-between text-xs font-bold">
-                <span className="text-blue-400">EXP</span>
-                <span className="text-slate-400">
-                  {currentStatus.statusExp} / {currentStatus.nextLevelExp}
-                </span>
-              </div>
+            <div className="flex gap-3">
+              {/* 카테고리 선택 상태일 때 '뒤로가기' 버튼 */}
+              {selectedType !== null && (
+                <button
+                  onClick={() => setSelectedType(null)}
+                  className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700 cursor-pointer"
+                >
+                  ← 카테고리 선택
+                </button>
+              )}
 
-              <div className="h-3.5 overflow-hidden rounded-full bg-slate-950 border border-slate-800/80 p-0.5">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-[0_0_12px_rgba(59,130,246,0.6)] transition-all duration-500"
-                  style={{ width: `${expPercent}%` }}
-                />
-              </div>
+              <button
+                onClick={goStudentMyPage}
+                className="rounded-xl border border-slate-700 px-5 py-3 text-sm text-slate-300 transition hover:border-blue-500 cursor-pointer"
+              >
+                마이페이지
+              </button>
             </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-xs font-semibold text-slate-300 transition hover:border-rose-500/50 hover:text-rose-400 active:scale-95 cursor-pointer"
-            >
-              로그아웃
-            </button>
-          </header>
+          {/* 1. 카테고리 미선택 시 : 3개 선택 버튼 화면 */}
+          {selectedType === null && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 py-6">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className="flex flex-col items-center justify-center rounded-2xl border border-slate-700 bg-[#081225] p-8 transition hover:-translate-y-1 hover:border-blue-500 hover:bg-[#0b1730] cursor-pointer group"
+                >
+                  <span className="text-5xl mb-4 transition transform group-hover:scale-110">{cat.icon}</span>
+                  <h4 className="text-xl font-bold text-white mb-2">{cat.name}</h4>
+                  <p className="text-xs text-slate-400 text-center">{cat.desc}</p>
+                  <span className="mt-6 text-sm text-blue-400 font-semibold group-hover:underline">
+                    입장하기 →
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
-          <main className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
-            <section className="space-y-6">
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[220px]">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-5xl shadow-[0_0_25px_rgba(59,130,246,0.35)] ring-4 ring-blue-500/20">
-                  👩
-                </div>
+          {/* 2. 카테고리 선택 시 : 목록 및 페이징 UI */}
+          {selectedType !== null && (
+            <>
+              {loading && <div className="py-12 text-center text-slate-400">퀴즈를 불러오는 중입니다...</div>}
+              {error && <div className="py-12 text-center text-red-400">{error}</div>}
 
-                <h3 className="mt-4 text-lg font-bold text-slate-100">
-                  {currentStatus.studentName}
-                </h3>
-
-                <p className="mt-1 text-xs font-medium text-slate-400">
-                  {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
-                </p>
-              </div>
-            </section>
-
-            <section className="space-y-6">
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
-                <div className="mb-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-blue-400">MY STATUS</p>
-                    <h3 className="mt-0.5 text-xl font-extrabold text-slate-100">나의 능력치</h3>
-                  </div>
-
-                  <div className="rounded-xl border border-blue-500/30 bg-blue-950/50 px-3.5 py-1.5 text-xs font-bold text-blue-300">
-                    Lv.{currentStatus.statusLevel}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-blue-500/50 hover:scale-[1.02]">
-                    <div className="text-2xl">⚔️</div>
-                    <p className="mt-3 text-xs font-medium text-slate-400">공격력</p>
-                    <p className="mt-0.5 text-2xl font-black text-blue-400">
-                      {currentStatus.statusAttack}
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-500">5지선다</p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-purple-500/50 hover:scale-[1.02]">
-                    <div className="text-2xl">🧠</div>
-                    <p className="mt-3 text-xs font-medium text-slate-400">지혜</p>
-                    <p className="mt-0.5 text-2xl font-black text-purple-400">
-                      {currentStatus.statusWisdom}
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-500">빈칸 채우기</p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-cyan-500/50 hover:scale-[1.02]">
-                    <div className="text-2xl">⚡</div>
-                    <p className="mt-3 text-xs font-medium text-slate-400">스피드</p>
-                    <p className="mt-0.5 text-2xl font-black text-cyan-400">
-                      {currentStatus.statusSpeed}
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-500">O / X 퀴즈</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <span>🏆</span> 학년 주간 랭킹
-                  </h3>
-                  <span className="text-[11px] font-semibold text-slate-500">TOP 5</span>
-                </div>
-
-                <div className="space-y-2.5">
-                  {topRankings.length > 0 ? (
-                    topRankings.map((rankItem) => (
-                      <div
-                        key={rankItem.studentNo || rankItem.rank}
-                        className="flex items-center justify-between rounded-xl border border-slate-800/60 bg-[#0f1a2e] px-4 py-3 transition hover:border-slate-700"
+              {!loading && !error && (
+                <div className="space-y-4">
+                  {quizzes.length > 0 ? (
+                    quizzes.map((quiz, index) => (
+                      <button
+                        key={quiz.quizNo || index}
+                        onClick={() => goQuizDetail(quiz.quizNo)}
+                        className="flex w-full items-center justify-between rounded-2xl border border-slate-700 bg-[#081225] px-6 py-5 text-left transition hover:border-blue-500 hover:bg-[#0b1730] cursor-pointer"
                       >
-                        <span className="text-sm font-medium text-slate-200">
-                          {getRankBadge(rankItem.rank)} {rankItem.studentName}
-                        </span>
-                        <span className="text-xs font-bold text-blue-400">
-                          Lv.{rankItem.level}
-                        </span>
-                      </div>
+                        <div className="flex items-center gap-5">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 font-bold">
+                            Q{(pageInfo.currentPage - 1) * 5 + index + 1}
+                          </div>
+                          <div>
+                            <p className="text-lg font-bold">{quiz.quizTitle}</p>
+                          </div>
+                        </div>
+                        <span className="text-blue-400">도전하기 →</span>
+                      </button>
                     ))
                   ) : (
-                    <div className="py-6 text-center text-xs text-slate-500">
-                      랭킹 정보를 불러오는 중이거나 데이터가 없습니다.
+                    <div className="py-12 text-center text-slate-400">
+                      등록된 {getCategoryTitle(selectedType)}가 없습니다.
+                    </div>
+                  )}
+
+                  {/* 페이지네이션 (5개 단위) */}
+                  {pageInfo.pageNumberList.length > 0 && (
+                    <div className="mt-8 flex justify-center gap-2 pt-4">
+                      {pageInfo.prev && (
+                        <button
+                          onClick={() => handlePageChange(pageInfo.currentPage - 1)}
+                          className="rounded-lg border border-slate-700 px-3 py-1 text-slate-400 hover:border-blue-500 cursor-pointer"
+                        >
+                          이전
+                        </button>
+                      )}
+                      {pageInfo.pageNumberList.map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`rounded-lg px-3 py-1 font-bold cursor-pointer ${
+                            pageInfo.currentPage === pageNum
+                              ? "bg-blue-600 text-white"
+                              : "border border-slate-700 text-slate-400 hover:border-blue-500"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                      {pageInfo.next && (
+                        <button
+                          onClick={() => handlePageChange(pageInfo.currentPage + 1)}
+                          className="rounded-lg border border-slate-700 px-3 py-1 text-slate-400 hover:border-blue-500 cursor-pointer"
+                        >
+                          다음
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
-              </div>
-
-            </section>
-          </main>
+              )}
+            </>
+          )}
         </div>
       </div>
-    </BasicLayout>
+    </div>
   );
 };
 
-export default StudentMyPage;
+export default QuizListPage;
