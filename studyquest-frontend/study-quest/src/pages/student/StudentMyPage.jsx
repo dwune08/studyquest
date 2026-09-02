@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import jwtAxios from "../../api/jwtAxios"; // 프로젝트 구조에 맞게 경로 확인
+import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import BasicLayout from "../../layouts/BasicLayout";
 
@@ -9,7 +9,7 @@ const StudentMyPage = () => {
   const [loading, setLoading] = useState(true);
   const [warningMessage, setWarningMessage] = useState("");
 
-  const { goLogin } = useCustomNavigate();
+  const { goLogin, goModify, goRank } = useCustomNavigate();
 
   useEffect(() => {
     const loadData = async () => {
@@ -17,10 +17,8 @@ const StudentMyPage = () => {
       setWarningMessage("");
 
       try {
-        // 백엔드의 GET /mypage/me (JWT 토큰 기반 로그인 사용자 본인 조회 API) 호출
         const res = await jwtAxios.get("/mypage/me");
 
-        // res.data -> StudentMyPageDTO { status: StatusDTO, topRankings: List<RankDTO> }
         if (res.data) {
           setStatus(res.data.status);
           setTopRankings(res.data.topRankings || []);
@@ -29,11 +27,11 @@ const StudentMyPage = () => {
         console.error("마이페이지 데이터 조회 실패:", error);
         setWarningMessage("데이터를 불러오는 데 실패했습니다. 기본 정보가 표시됩니다.");
 
-        // API 실패 시 localStorage의 기본 사용자 정보로 Fallback 세팅
         const storedUserInfo = localStorage.getItem("userInfo");
         if (storedUserInfo) {
           const userInfo = JSON.parse(storedUserInfo);
           setStatus({
+            memberNo: userInfo.no || userInfo.memberNo,
             studentName: userInfo.userName || userInfo.name || "모험가",
             studentEmail: userInfo.userEmail || userInfo.email || "-",
             studentGrade: userInfo.studentGrade || userInfo.grade || "-",
@@ -47,14 +45,25 @@ const StudentMyPage = () => {
     loadData();
   }, []);
 
-  // 로그아웃 핸들러
   const handleLogout = () => {
     localStorage.clear();
     goLogin();
   };
 
-  // Safe Navigation용 기본값 (statusDTO 필드 기준)
+  const handleEditProfile = () => {
+    if (currentStatus.memberNo) {
+      goModify(currentStatus.memberNo);
+    } else {
+      goModify();
+    }
+  };
+
+  const handleGoRank = () => {
+    goRank();
+  }
+
   const currentStatus = status || {
+    memberNo: null,
     studentName: "모험가",
     studentEmail: "이메일 정보 없음",
     studentGrade: "-",
@@ -74,7 +83,6 @@ const StudentMyPage = () => {
         )
       : 0;
 
-  // 랭킹 등수 이모지 변환 함수
   const getRankBadge = (rank) => {
     if (rank === 1) return "🥇";
     if (rank === 2) return "🥈";
@@ -85,24 +93,21 @@ const StudentMyPage = () => {
   return (
     <BasicLayout>
       <div className="w-full max-w-6xl mx-auto px-4 py-2 text-white flex flex-col justify-start">
-        {/* 에러/경고 안내 배너 */}
         {warningMessage && (
           <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-xs sm:text-sm text-amber-300">
             ⚠️ {warningMessage}
           </div>
         )}
 
-        {/* 로딩 인디케이터 */}
         {loading && (
           <div className="mb-3 text-center text-xs text-blue-400">
             최신 데이터를 동기화 중입니다...
           </div>
         )}
 
-        {/* 메인 프로필/스탯 전체 카드 */}
         <div className="rounded-3xl border border-slate-800 bg-[#0f1a2e]/90 p-6 sm:p-8 shadow-[0_0_40px_rgba(37,99,235,0.12)] backdrop-blur-sm">
           
-          {/* 1. 카드 상단 프로필 요약 헤더 */}
+          {/* 헤더 영역 */}
           <header className="flex flex-col gap-6 border-b border-slate-800 pb-6 md:flex-row md:items-center">
             <div>
               <p className="text-xs font-semibold tracking-wider text-blue-400">STUDENT PROFILE</p>
@@ -114,7 +119,6 @@ const StudentMyPage = () => {
               </p>
             </div>
 
-            {/* EXP 게이지 */}
             <div className="flex-1 md:px-8">
               <div className="mb-2 flex justify-between text-xs font-bold">
                 <span className="text-blue-400">EXP</span>
@@ -142,16 +146,19 @@ const StudentMyPage = () => {
             </button>
           </header>
 
-          {/* 2. 메인 콘텐츠 그리드 */}
+          {/* 메인 콘텐츠 그리드 */}
           <main className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
             
-            {/* 왼쪽: 프로필 아바타 */}
-            <section className="space-y-6">
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[220px]">
+            {/* 🎯 왼쪽: 캐릭터 프로필 & 정보 수정 버튼 (수정 완료) */}
+            <section className="flex flex-col">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[380px]">
+                
+                {/* 캐릭터 아바타 */}
                 <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-5xl shadow-[0_0_25px_rgba(59,130,246,0.35)] ring-4 ring-blue-500/20">
                   👩
                 </div>
 
+                {/* 이름 및 학년 */}
                 <h3 className="mt-4 text-lg font-bold text-slate-100">
                   {currentStatus.studentName}
                 </h3>
@@ -159,13 +166,22 @@ const StudentMyPage = () => {
                 <p className="mt-1 text-xs font-medium text-slate-400">
                   {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
                 </p>
+
+                {/* ⚙️ 정보 수정 버튼 (3학년 바로 밑에 또렷하게 배치) */}
+                <button
+                  type="button"
+                  onClick={handleEditProfile}
+                  className="w-full mt-6 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-950/60 hover:bg-blue-900/70 text-blue-300 hover:text-blue-100 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>⚙️</span> 정보 수정
+                </button>
+
               </div>
             </section>
 
             {/* 오른쪽: 스탯 및 랭킹 영역 */}
             <section className="space-y-6">
               
-              {/* 스탯 카드 */}
               <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
@@ -179,7 +195,6 @@ const StudentMyPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  {/* 공격력 */}
                   <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-blue-500/50 hover:scale-[1.02]">
                     <div className="text-2xl">⚔️</div>
                     <p className="mt-3 text-xs font-medium text-slate-400">공격력</p>
@@ -189,7 +204,6 @@ const StudentMyPage = () => {
                     <p className="mt-1 text-[11px] text-slate-500">5지선다</p>
                   </div>
 
-                  {/* 지혜 */}
                   <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-purple-500/50 hover:scale-[1.02]">
                     <div className="text-2xl">🧠</div>
                     <p className="mt-3 text-xs font-medium text-slate-400">지혜</p>
@@ -199,7 +213,6 @@ const StudentMyPage = () => {
                     <p className="mt-1 text-[11px] text-slate-500">빈칸 채우기</p>
                   </div>
 
-                  {/* 스피드 */}
                   <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-cyan-500/50 hover:scale-[1.02]">
                     <div className="text-2xl">⚡</div>
                     <p className="mt-3 text-xs font-medium text-slate-400">스피드</p>
@@ -211,8 +224,7 @@ const StudentMyPage = () => {
                 </div>
               </div>
 
-              {/* 주간 랭킹 */}
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6">
+              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6" onClick={handleGoRank}>
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                     <span>🏆</span> 학년 주간 랭킹
