@@ -1,12 +1,9 @@
-import { useLocation, useNavigate, Link, useParams } from "react-router-dom";
+import { useLocation, useNavigate, } from "react-router-dom";
 import "../../styles/quiz.css";
 
 const QuizResultPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { quizNo } = useParams();
-  const { state } = useLocation();
-
 
   const { quiz, answer } =
     location.state || {};

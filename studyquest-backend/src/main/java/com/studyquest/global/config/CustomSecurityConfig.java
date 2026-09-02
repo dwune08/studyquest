@@ -58,7 +58,7 @@ public class CustomSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/ranks/**").authenticated()
 
                         // 4. 선생님 전용 API (퀴즈 생성/수정/삭제)
-                        .requestMatchers(HttpMethod.POST, "/quizzes").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.POST, "/quizzes/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")
 

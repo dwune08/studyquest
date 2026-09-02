@@ -6,15 +6,17 @@ export const useCustomNavigate = () => {
   return {
     goHome: () => navigate("/"),
     goLogin: (param) => {
-         if (param?.tab === "join") {
-         navigate("/users/login?tab=join");
-         } else {
-         navigate("/users/login");
-            }
-         },
-    goQuizList: () => navigate("/quizzes"), // 👈 /quizzes/list 대신 /quizzes 사용
+      if (param?.tab === "join") {
+        navigate("/users/login?tab=join");
+      } else {
+        navigate("/users/login");
+      }
+    },
+    goQuizList: () => navigate("/quizzes"),
+    goQuizRegister: () => navigate("/quizzes/register"),
     goEvent: () => navigate("/event"),
     goStudentMyPage: () => navigate("/student/mypage"),
+    goTeacherPage: () => navigate("/teacher"),
     goQuizDetail: (quizNo) => navigate(`/quizzes/${quizNo}`),
     goBack: () => navigate(-1),
   };
