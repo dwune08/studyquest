@@ -48,7 +48,7 @@ jwtAxios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // 401 Unauthorized 에러 발생 시
+    // 401 Unauthorized 에러 발생 시 (단, 재발급 요청 자체에서 난 401은 무한 루프 방지를 위해 제외)
     if (error.response?.status === 401 && !originalRequest._retry) {
       
       // 이미 토큰 재발급이 진행 중이라면, 이후 401 요청들은 큐에 대기시킴
@@ -67,47 +67,50 @@ jwtAxios.interceptors.response.use(
       isRefreshing = true;
 
       const refreshToken = localStorage.getItem('refreshToken');
-
-      if (refreshToken) {
-        try {
-          // Refresh Token으로 새로운 Access Token 발급 요청
-          const response = await axios.post('http://localhost:8080/users/refresh', {
-            refreshToken: refreshToken,
-          });
-
-          const newAccessToken = response.data.accessToken;
-          const newRefreshToken = response.data.refreshToken;
-
-          // 새로운 토큰 로컬스토리지 저장
-          localStorage.setItem('accessToken', newAccessToken);
-          if (newRefreshToken) {
-            localStorage.setItem('refreshToken', newRefreshToken);
-          }
-
-          // 대기열에 들어있던 다른 요청들에 새로 발급받은 Access Token 전달 후 재요청
-          processQueue(null, newAccessToken);
-
-          // 실패했던 첫 번째 요청의 Authorization 헤더 교체 후 재시도
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return jwtAxios(originalRequest);
-
-        } catch (refreshError) {
-          // 대기열의 모든 요청 거부 처리
-          processQueue(refreshError, null);
-          console.error('토큰 재발급 실패: 로그인 세션이 만료되었습니다.', refreshError);
-          
-          // Refresh Token도 만료되었거나 유효하지 않은 경우 저장소 비우고 로그인으로 이동
-          localStorage.clear();
-          alert('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
-          window.location.href = '/users/login';
-          return Promise.reject(refreshError);
-        } finally {
-          isRefreshing = false;
-        }
-      } else {
-        // Refresh Token이 없으면 바로 로그인 화면으로 이동
+      const currentAccessToken = localStorage.getItem('accessToken');
+      if (!refreshToken) {
+        // Refresh Token조차 없으면 바로 로그인 화면으로 이동
         localStorage.clear();
-        window.location.href = '/users/login';
+        alert('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+        window.location.href = '/users/login'; // 라우터 경로에 맞게 수정
+        return Promise.reject(error);
+      }
+
+      try {
+        // 인터셉터가 없는 순수 axios를 사용하여 Refresh Token으로 새로운 Access Token 발급 요청
+        const response = await axios.post('http://localhost:8080/users/refresh', {
+          accessToken: currentAccessToken,
+          refreshToken: refreshToken,
+        });
+
+        const newAccessToken = response.data.accessToken;
+        const newRefreshToken = response.data.refreshToken;
+
+        // 새로운 토큰 로컬스토리지 저장
+        localStorage.setItem('accessToken', newAccessToken);
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
+
+        // 대기열에 들어있던 다른 요청들에 새로 발급받은 Access Token 전달 후 재요청
+        processQueue(null, newAccessToken);
+
+        // 실패했던 첫 번째 요청의 Authorization 헤더 교체 후 재시도
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return jwtAxios(originalRequest);
+
+      } catch (refreshError) {
+        // 대기열의 모든 요청 거부 처리
+        processQueue(refreshError, null);
+        console.error('토큰 재발급 실패: 로그인 세션이 만료되었습니다.', refreshError);
+        
+        // Refresh Token도 만료되었거나 유효하지 않은 경우 저장소 비우고 로그인으로 이동
+        localStorage.clear();
+        alert('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+        window.location.href = '/users/login'; // 라우터 경로에 맞게 수정
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 

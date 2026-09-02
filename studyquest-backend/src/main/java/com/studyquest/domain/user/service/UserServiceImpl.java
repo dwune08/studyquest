@@ -78,16 +78,21 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
 
         Integer studentGrade = null;
+        Long studentNo = null; // 👈 학생 고유 번호 변수 선언
+
         Integer teacherGrade = null;
+        Long teacherNo = null; // 👈 선생님 고유 번호 변수 선언
 
         if (user.getUserType() == 1) {
             Student student = studentRepository.findByUser_UserNo(userNo)
                     .orElseThrow(() -> new EntityNotFoundException("학생 상세 정보를 찾을 수 없습니다."));
             studentGrade = student.getStudentGrade();
+            studentNo = student.getStudentNo(); // 👈 학생 PK 추출
         } else if (user.getUserType() == 2) {
             Teacher teacher = teacherRepository.findByUser_UserNo(userNo)
                     .orElseThrow(() -> new EntityNotFoundException("선생님 상세 정보를 찾을 수 없습니다."));
             teacherGrade = teacher.getTeacherGrade();
+            teacherNo = teacher.getTeacherNo(); // 👈 선생님 PK 추출
         }
 
         return UserResponseDTO.builder()
@@ -98,7 +103,9 @@ public class UserServiceImpl implements UserService {
                 .userPhone(user.getUserPhone())
                 .userType(user.getUserType())
                 .studentGrade(studentGrade)
+                .studentNo(studentNo)     // 👈 응답 DTO에 빌드
                 .teacherGrade(teacherGrade)
+                .teacherNo(teacherNo)     // 👈 응답 DTO에 빌드
                 .build();
     }
 

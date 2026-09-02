@@ -8,17 +8,17 @@ const QuizRegisterPage = () => {
   // Redux에서 로그인한 교사 정보 가져오기
   const loginState = useSelector((state) => state.loginSlice);
   
-  const teacherName = loginState?.name || "선생님";
-  const teacherGrade = loginState?.teacherGrade ?? 1;
-  // 백엔드 QuizDTO 전송에 필요한 teacherNo 추출
-  const teacherNo = loginState?.teacherNo || loginState?.no || null;
+  // 새로고침 대비 localStorage에서도 백업으로 가져오기
+  const localUserInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
-  // 로그아웃 처리
+  // userName 또는 name 모두 대응, localStorage 값까지 폴백으로 활용
+  const teacherName = loginState?.userName || loginState?.name || localUserInfo?.userName || "선생님";
+  const teacherGrade = loginState?.teacherGrade || localUserInfo?.teacherGrade || 1;
+  const teacherNo = loginState?.teacherNo || loginState?.userNo || localUserInfo?.teacherNo || localUserInfo?.userNo || null;
+
   const handleLogout = () => {
-    if (window.confirm("로그아웃 하시겠습니까?")) {
-      localStorage.clear();
-      goLogin();
-    }
+    localStorage.clear();
+    goLogin();
   };
 
   return (
@@ -42,14 +42,14 @@ const QuizRegisterPage = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all"
+          className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all cursor-pointer"
         >
           로그아웃
         </button>
       </header>
 
-      {/* Props로 teacherNo와 teacherGrade 전달 */}
-      <QuizRegisterComponent teacherNo={teacherNo} teacherGrade={teacherGrade} />
+      {/* Props로 teacherNo 전달 */}
+      <QuizRegisterComponent teacherNo={teacherNo} />
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
-import { useCustomNavigate } from "../../hooks/useCustomNavigate"; // 👈 커스텀 훅 경로 확인
+import { useDispatch } from "react-redux"; // 1. useDispatch 임포트
+import { login } from "../../slice/loginSlice"; // 2. 만든 login 액션 임포트 (경로 확인 필요)
+import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import { useSearchParams } from "react-router-dom";
 
 const LoginPage = () => {
-  // 커스텀 훅에서 필요한 이동 함수들 추출
+  const dispatch = useDispatch(); // 3. dispatch 훅 선언
   const { goStudentMyPage, goTeacherPage } = useCustomNavigate(); 
   const [searchParams] = useSearchParams();
   const isJoinFromUrl = searchParams.get("tab") === "join";
@@ -38,33 +40,51 @@ const LoginPage = () => {
       try {
         const response = await axios.post("http://localhost:8080/users/login", loginPayload);
         
-        // 백엔드 응답 데이터 추출
-        const { accessToken, refreshToken, userNo, studentNo, userName, userEmail, userType, studentGrade } = response.data;
+        // 백엔드 응답 데이터 추출 (teacherNo 포함)
+        const { 
+          accessToken, 
+          refreshToken, 
+          userNo, 
+          studentNo, 
+          teacherNo,     // 👈 선생님 고유 번호 추출
+          userName, 
+          userEmail, 
+          userType, 
+          studentGrade,
+          teacherGrade   // 👈 선생님 학년 추출
+        } = response.data;
 
-        // 토큰 및 필수 유저 데이터 localStorage 저장
+        // 토큰 localStorage 저장
         if (accessToken) localStorage.setItem("accessToken", accessToken);
         if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
         
+        // 4. Redux 및 로컬스토리지에 담을 유저 객체 통합 생성
         const userInfo = { 
-          userNo: userNo || studentNo, 
-          studentNo: studentNo || userNo,
+          userNo: userNo || studentNo || teacherNo, 
+          studentNo: studentNo || null,
+          teacherNo: teacherNo || null, // 👈 teacherNo 확실히 매핑
           userName, 
           userEmail,
-          studentGrade,
-          userType 
+          userType,
+          studentGrade: studentGrade || null,
+          teacherGrade: teacherGrade || null
         };
+
+        // 5. 🔴 핵심: Redux 스토어에 유저 정보 디스패치!
+        dispatch(login(userInfo));
+
+        // 6. 새로고침 대비 로컬스토리지에도 저장
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
         alert(`${userName || '모험가'}님, 환영합니다!`);
 
         // 커스텀 훅을 통한 이동 제어
         if (userType === 1) {
-          goStudentMyPage(); // 👈 커스텀 훅 함수 사용
+          goStudentMyPage();
         } else if (userType === 2) {
           goTeacherPage();
-          // 필요 시 useCustomNavigate에 goTeacherDashboard 추가 후 호출
         } else {
-          // 필요 시 useCustomNavigate에 goMain 추가 후 호출
+          // 기타 권한 처리
         }
 
       } catch (error) {
@@ -73,7 +93,7 @@ const LoginPage = () => {
       }
 
     } else {
-      // 2. 회원가입 요청
+      // 2. 회원가입 요청 로직 (기존과 동일)
       const isStudent = formData.userType === 'student';
 
       const signUpPayload = {
@@ -96,22 +116,9 @@ const LoginPage = () => {
 
       } catch (error) {
         console.error("회원가입 에러:", error);
-
-        // 1. DTO 유효성 검사 에러 등, 백엔드에서 에러 메시지를 명확히 보내준 경우
         if (error.response && error.response.data && error.response.data.message) {
-          
-          // (선택) 모든 에러를 한 번에 다 보여주고 싶다면 아래 주석을 해제해서 사용하세요.
-          // if (error.response.data.errors) {
-          //   const allMessages = Object.values(error.response.data.errors).join('\n');
-          //   alert(allMessages);
-          //   return;
-          // }
-
           alert(error.response.data.message); 
-          // 결과 예시: "비밀번호는 영문, 숫자 포함 8자 이상이어야 합니다."
-        } 
-        // 2. 서버가 다운되었거나 응답이 없는 경우
-        else {
+        } else {
           alert("회원가입 실패: 서버와의 통신에 문제가 발생했습니다. 다시 시도해주세요.");
         }
       }

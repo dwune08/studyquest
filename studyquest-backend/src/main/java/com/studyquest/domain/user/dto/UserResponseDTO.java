@@ -22,5 +22,7 @@ public class UserResponseDTO {
 
     // 역할별 추가 정보 (해당하지 않는 역할은 null)
     private Integer studentGrade;
+    private Long studentNo;
     private Integer teacherGrade;
+    private Long teacherNo;
 }

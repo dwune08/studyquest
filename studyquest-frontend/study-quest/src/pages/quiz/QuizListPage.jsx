@@ -28,8 +28,19 @@ const QuizListPage = () => {
     try {
       setLoading(true);
       setError(null);
-      // quizType 파라미터 전달 및 5개씩 페이징
-      const res = await jwtAxios.get(`/quizzes?quizType=${type}&page=${page}&size=5`);
+
+      // 쿼리 파라미터 객체 생성 (type이 null이거나 undefined가 아닐 때만 포함)
+      const params = {
+        page: page,
+        size: 5,
+      };
+
+      if (type !== null && type !== undefined && type !== "") {
+        params.quizType = type;
+      }
+
+      // jwtAxios의 params 옵션을 활용하면 null 파라미터 문제를 방지할 수 있습니다.
+      const res = await jwtAxios.get("/quizzes", { params });
       
       setQuizzes(res.data.dtoList || []);
       setPageInfo({

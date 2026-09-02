@@ -1,4 +1,7 @@
+import { useCustomNavigate } from "../../hooks/useCustomNavigate";
+
 export default function ItemManagement() {
+  const { goQuizRegister } = useCustomNavigate();
   // QUIZ + CHOICES 테이블 기반 데이터
   const quizzes = [
     {
@@ -43,7 +46,7 @@ export default function ItemManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center border-b border-gray-800 pb-4">
         <h3 className="font-bold text-gray-200 text-base">⚔️ QUIZ 테이블 등록 현황</h3>
-        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition-all cursor-pointer">
+        <button onClick={goQuizRegister} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition-all cursor-pointer">
           + 새 퀴즈 출제
         </button>
       </div>
