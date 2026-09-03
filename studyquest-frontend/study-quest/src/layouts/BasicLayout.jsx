@@ -79,10 +79,16 @@ const BasicLayout = ({
     if (onAttendanceClick) {
       onAttendanceClick(e);
     }
+    if (onAttendanceClick) {
+      onAttendanceClick(e);
+    }
     goEvent();
   };
 
   const handleQuizDungeon = (e) => {
+    if (onQuizDungeonClick) {
+      onQuizDungeonClick(e);
+    }
     if (onQuizDungeonClick) {
       onQuizDungeonClick(e);
     }
@@ -91,6 +97,12 @@ const BasicLayout = ({
 
   return (
     <div className="w-screen h-screen min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between overflow-hidden font-sans">
+      <TopMenu
+        {...finalUserInfo}
+        userType={finalUserType}
+        onLogout={onLogout}
+      />
+
       <TopMenu
         {...finalUserInfo}
         userType={finalUserType}

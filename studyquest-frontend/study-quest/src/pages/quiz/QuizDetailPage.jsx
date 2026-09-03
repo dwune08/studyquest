@@ -7,7 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 const QuizDetailPage = () => {
   const { no: quizNo } = useParams();
   const { goQuizList, goQuizResult } = useCustomNavigate();
-  const { user, student } = useAuth(); // 인증 훅에서 학생 정보 추출
+  const { user, studentNo, currentNo } = useAuth();
 
   const [quiz, setQuiz] = useState(null);
   const [answer, setAnswer] = useState("");
@@ -47,16 +47,17 @@ const QuizDetailPage = () => {
       return;
     }
 
-    const currentStudentNo = student?.studentNo || user?.studentNo;
+    // useAuth가 파싱한 학생 식별자 추출 (우선순위: studentNo -> currentNo -> user.userNo)
+    const targetStudentNo = studentNo || currentNo || user?.userNo;
 
-    if (!currentStudentNo) {
+    if (!targetStudentNo) {
       alert("학생 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
       return;
     }
 
     try {
       const resultDTO = {
-        studentNo: Number(currentStudentNo),
+        studentNo: Number(targetStudentNo),
         quizNo: Number(quizNo),
         resultAnswer: String(answer),
       };
@@ -65,7 +66,7 @@ const QuizDetailPage = () => {
 
       // 백엔드 반환 데이터(res.data)와 quiz 객체를 규격에 맞춰 전달
       const resultData = {
-        isCorrect: res.data.correct ?? res.data.isCorrect, // 백엔드 DTO 필드명 대응
+        isCorrect: res.data.correct ?? res.data.isCorrect,
         resultAnswer: String(answer),
       };
 
@@ -108,8 +109,31 @@ const QuizDetailPage = () => {
     );
   }
 
-  const quizTypeNum = Number(quiz.quizType);
-  const choices = [quiz.choice1, quiz.choice2, quiz.choice3, quiz.choice4, quiz.choice5].filter(Boolean);
+  // quizType 정규화 (문자열, 숫자, Enum 형태 지원)
+  const quizTypeRaw = String(quiz.quizType ?? "").toUpperCase();
+
+  // 타입 조건 판별 (0, 1, 2 또는 MULTIPLE, SHORT, OX)
+  const isMultipleChoice =
+    quizTypeRaw === "0" ||
+    quizTypeRaw.includes("MULTIPLE") ||
+    quizTypeRaw.includes("CHOICE");
+
+  const isShortAnswer =
+    quizTypeRaw === "1" ||
+    quizTypeRaw.includes("SHORT") ||
+    quizTypeRaw.includes("SUBJECTIVE");
+
+  const isOX =
+    quizTypeRaw === "2" ||
+    quizTypeRaw.includes("OX");
+
+  const choices = [
+    quiz.choice1,
+    quiz.choice2,
+    quiz.choice3,
+    quiz.choice4,
+    quiz.choice5,
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#020617] px-6 py-10 text-white">
@@ -142,8 +166,8 @@ const QuizDetailPage = () => {
               </p>
             </div>
 
-            {/* TYPE 0: 5지선다 */}
-            {quizTypeNum === 0 && (
+            {/* TYPE 0 / MULTIPLE_CHOICE: 5지선다 */}
+            {isMultipleChoice && (
               <div className="grid grid-cols-1 gap-4">
                 {choices.map((choice, index) => {
                   const choiceNum = index + 1;
@@ -168,8 +192,8 @@ const QuizDetailPage = () => {
               </div>
             )}
 
-            {/* TYPE 1: 주관식 */}
-            {quizTypeNum === 1 && (
+            {/* TYPE 1 / SHORT_ANSWER: 주관식 */}
+            {isShortAnswer && (
               <div>
                 <label className="mb-3 block text-sm text-slate-400">
                   정답 입력
@@ -184,8 +208,8 @@ const QuizDetailPage = () => {
               </div>
             )}
 
-            {/* TYPE 2: O/X */}
-            {quizTypeNum === 2 && (
+            {/* TYPE 2 / OX: O/X */}
+            {isOX && (
               <div className="grid grid-cols-2 gap-6">
                 {["O", "X"].map((option) => {
                   const isSelected = String(answer) === option;
@@ -208,6 +232,13 @@ const QuizDetailPage = () => {
                     </button>
                   );
                 })}
+              </div>
+            )}
+
+            {/* 정의되지 않은 타입 예외 처리 */}
+            {!isMultipleChoice && !isShortAnswer && !isOX && (
+              <div className="rounded-2xl border border-dashed border-slate-700 p-6 text-center text-slate-400">
+                지원하지 않거나 알 수 없는 퀴즈 타입입니다. (quizType: {String(quiz.quizType)})
               </div>
             )}
           </div>
