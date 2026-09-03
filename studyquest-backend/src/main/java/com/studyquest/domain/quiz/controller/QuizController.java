@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Slf4j
 @RestController
@@ -30,17 +31,26 @@ public class QuizController {
     }
 
     /**
-     * 11. 선생님별 출제 퀴즈 목록 조회 (또는 전체 페이징 목록 조회)
-     * GET /quizzes?teacherNo=5&page=1&size=10
+     * 11. 퀴즈 목록 조회 (학생인 경우 풀지 않은 문제만 필터링)
+     * GET /quizzes?quizType=0&page=1&size=10
      */
     @GetMapping
     public ResponseEntity<PageResponseDTO<QuizDTO>> getQuizList(
             @RequestParam(name = "quizType", required = false) Integer quizType,
             @RequestParam(name = "teacherNo", required = false) Long teacherNo,
+            @AuthenticationPrincipal UserDTO userDTO,
             PageRequestDTO pageRequestDTO) {
 
-        // PageRequestDTO 수정 없이 컨트롤러에서 전달받은 quizType을 그대로 Service에 전달
-        PageResponseDTO<QuizDTO> response = quizService.getQuizList(pageRequestDTO, quizType, teacherNo);
+        Long studentNo = null;
+        if (userDTO != null) {
+            studentNo = userDTO.getStudentNo();
+            log.info(" 로그인한 유저 studentNo: {}", studentNo); // 👈 로그 추가
+        } else {
+            log.warn(" SecurityContext에 UserDTO가 존재하지 않습니다.");
+        }
+
+
+        PageResponseDTO<QuizDTO> response = quizService.getQuizList(pageRequestDTO, quizType, teacherNo, studentNo);
         return ResponseEntity.ok(response);
     }
 

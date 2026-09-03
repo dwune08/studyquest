@@ -41,8 +41,8 @@ public class AuthController {
         UserDTO userDTO = (UserDTO) authentication.getPrincipal();
 
         Map<String, Object> claims = userDTO.getClaims();
-        String accessToken = JWTUtil.generateToken(claims, 10);          // Access Token: 10분
-        String refreshToken = JWTUtil.generateToken(claims, 60 * 2);     // Refresh Token: 24시간
+        String accessToken = JWTUtil.generateToken(claims, 10);             // Access Token: 10분
+        String refreshToken = JWTUtil.generateToken(claims, 60 * 24);        // Refresh Token: 24시간 (60분 * 24)
 
         Map<String, Object> result = new HashMap<>(claims);
         result.put("accessToken", accessToken);
@@ -68,25 +68,27 @@ public class AuthController {
         // 2. Refresh Token 검증
         Map<String, Object> refreshClaims = JWTUtil.validateToken(refreshToken);
 
-        Map<String, Object> claims = Map.of(
-                "userNo", refreshClaims.get("userNo"),
-                "userEmail", refreshClaims.get("userEmail"),
-                "userName", refreshClaims.get("userName"),
-                "userType", refreshClaims.get("userType"),
-                "roleNames", refreshClaims.get("roleNames")
-        );
+        // HashMap을 사용하여 null 처리 안전하게 보장 (teacherNo/studentNo)
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userNo", refreshClaims.get("userNo"));
+        claims.put("userEmail", refreshClaims.get("userEmail"));
+        claims.put("userName", refreshClaims.get("userName"));
+        claims.put("userType", refreshClaims.get("userType"));
+        claims.put("teacherNo", refreshClaims.get("teacherNo")); // 💡 필수 추가
+        claims.put("studentNo", refreshClaims.get("studentNo")); // 💡 필수 추가
+        claims.put("roleNames", refreshClaims.get("roleNames"));
 
         String newAccessToken = JWTUtil.generateToken(claims, 10);
         String newRefreshToken = refreshToken;
 
-        // 3. Refresh Token 남은 시간 확인 (1시간 미만일 경우 함께 재발급)
+        // 3. Refresh Token 남은 시간 확인 (3시간 미만일 경우 함께 재발급)
         Object expObj = refreshClaims.get("exp");
         long expiration = (expObj instanceof Number)
                 ? ((Number) expObj).longValue() * 1000L
                 : 0L;
 
         long remainingTime = expiration - System.currentTimeMillis();
-        if (remainingTime < 1000L * 60 * 60) {
+        if (remainingTime < 1000L * 60 * 60 * 3) {
             newRefreshToken = JWTUtil.generateToken(claims, 60 * 24);
         }
 

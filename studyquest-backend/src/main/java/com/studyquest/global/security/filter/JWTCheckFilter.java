@@ -11,14 +11,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class JWTCheckFilter extends OncePerRequestFilter {
@@ -101,7 +103,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 else if (userType == 2) roleNames.add("TEACHER");
             }
 
-            // UserDTO 인증 객체 생성 (변경되거나 추가된 파라미터 구조 반영)
+            // UserDTO 인증 객체 생성
             UserDTO userDTO = new UserDTO(
                     userNo,
                     userEmail,
@@ -113,11 +115,16 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                     roleNames
             );
 
-            // Spring Security Authentication 설정
+            // 💡 1. Security 인가용 Authorities 생성 (ROLE_ 접두사 부여)
+            List<GrantedAuthority> authorities = roleNames.stream()
+                    .map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
+                    .collect(Collectors.toList());
+
+            // 💡 2. Authentication 생성 시 직접 변환한 authorities 전달
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDTO,
                     null,
-                    userDTO.getAuthorities()
+                    authorities
             );
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();
