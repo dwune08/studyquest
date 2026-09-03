@@ -108,7 +108,7 @@ const profileImage = getStudentLevelImage(currentLevel);
   };
 
   return (
-    <BasicLayout userInfo={topMenuUserInfo} onLogout={handleLogout}> 
+    <BasicLayout userInfo={topMenuUserInfo} onLogout={handleLogout}>
       <div className="w-full max-w-6xl mx-auto px-4 py-2 text-white flex flex-col justify-start">
         {/* 에러/경고 안내 배너 */}
         {warningMessage && (
