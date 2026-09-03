@@ -31,7 +31,7 @@ const ItemManagement = () => {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
-      const response = await jwtAxios.get("http://localhost:8080/quizzes");
+      const response = await jwtAxios.get("/quizzes");
       
       const data = response.data;
       let extractedList = [];
@@ -76,7 +76,7 @@ const ItemManagement = () => {
     if (!result) return;
 
     try {
-      await jwtAxios.delete(`http://localhost:8080/quizzes/${quizNo}`);
+      await jwtAxios.delete(`/quizzes/${quizNo}`);
       setQuizzes((prev) => prev.filter((quiz) => quiz.quizNo !== quizNo));
       alert("삭제되었습니다.");
     } catch (error) {
