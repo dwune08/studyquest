@@ -81,15 +81,6 @@ const StudentMyPage = () => {
     statusSpeed: 0,
   };
 
-  // 헤더(TopMenu)로 전달되는 정보 (role: "student" 추가)
-  const topMenuUserInfo = {
-    role: "student",
-    userName: currentStatus.studentName,
-    userLevel: currentStatus.statusLevel,
-    currentExp: currentStatus.statusExp,
-    maxExp: currentStatus.nextLevelExp,
-  };
-
   const currentLevel = currentStatus.statusLevel ?? 1;
   const profileImage = getStudentLevelImage(currentLevel);
 
@@ -109,8 +100,17 @@ const StudentMyPage = () => {
     return `${rank}위`;
   };
 
+  const topMenuUserInfo = {
+  role: "student",
+  userType: 1,
+  userName: currentStatus.studentName,
+  userLevel: currentStatus.statusLevel ?? 1,
+  currentExp: currentStatus.statusExp ?? 0,
+  maxExp: currentStatus.nextLevelExp ?? 100,
+};
+
   return (
-    <BasicLayout userInfo={topMenuUserInfo} onLogout={handleLogout}>
+    <BasicLayout userType="student" userInfo={topMenuUserInfo} onLogout={handleLogout}>
       <div className="w-full max-w-6xl mx-auto px-4 py-2 text-white flex flex-col justify-start">
         {/* 에러/경고 안내 배너 */}
         {warningMessage && (
