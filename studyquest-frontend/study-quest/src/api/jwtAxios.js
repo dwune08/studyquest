@@ -8,11 +8,9 @@ const jwtAxios = axios.create({
   },
 });
 
-// 토큰 재발급 진행 여부 플래그 및 대기 중인 요청 큐(Queue)
 let isRefreshing = false;
 let failedQueue = [];
 
-// 대기열에 쌓인 요청들을 처리하는 함수
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -24,14 +22,13 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// 인증 실패 시 로컬 데이터 정리 및 로그인 페이지 이동
 const handleAuthError = (message) => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userInfo');
   
   if (message) alert(message);
-  window.location.href = '/users/login'; // 프로젝트 라우트 경로에 맞게 수정
+  window.location.href = '/users/login';
 };
 
 // 2. Request Interceptor: 모든 요청 발송 전 Access Token 자동 첨부
@@ -53,11 +50,12 @@ jwtAxios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
-    // 401 Unauthorized 에러 발생 시 (재발급 요청 실패 등 예외)
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 💡 401 Unauthorized 또는 403 Forbidden 시 재발급 로직 진입
+    if ((status === 401 || status === 403) && !originalRequest._retry) {
       
-      // 이미 토큰 재발급이 진행 중이라면, 이후 401 요청들은 큐에 대기시킴
+      // 이미 토큰 재발급 진행 중이면 큐에 대기
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -76,13 +74,13 @@ jwtAxios.interceptors.response.use(
       const currentAccessToken = localStorage.getItem('accessToken');
 
       if (!refreshToken) {
-        // Refresh Token이 없으면 로그인 화면으로 이동
+        isRefreshing = false;
         handleAuthError('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
         return Promise.reject(error);
       }
 
       try {
-        // 인터셉터가 없는 순수 axios로 재발급 요청
+        // 인터셉터가 적용되지 않은 기본 axios 사용 (무한 루프 방지)
         const response = await axios.post('http://localhost:8080/users/refresh', {
           accessToken: currentAccessToken,
           refreshToken: refreshToken,
@@ -91,21 +89,20 @@ jwtAxios.interceptors.response.use(
         const newAccessToken = response.data.accessToken;
         const newRefreshToken = response.data.refreshToken;
 
-        // 새로운 토큰 저장
+        // 새 토큰 저장
         localStorage.setItem('accessToken', newAccessToken);
         if (newRefreshToken) {
           localStorage.setItem('refreshToken', newRefreshToken);
         }
 
-        // 대기열 요청 처리
+        // 큐에 대기 중인 요청들 재실행
         processQueue(null, newAccessToken);
 
-        // 첫 번째 실패 요청 재시도
+        // 첫 번째 실패한 요청 재시도
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return jwtAxios(originalRequest);
 
       } catch (refreshError) {
-        // 대기열의 모든 요청 거부 처리
         processQueue(refreshError, null);
         console.error('토큰 재발급 실패:', refreshError);
         
