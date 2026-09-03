@@ -22,7 +22,7 @@ const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick, userType }) => {
 
   if (userType === 2) {
     return (
-      <footer className="py-4 px-12 bg-[#070a12] border-t border-gray-900 flex justify-end shrink-0">
+      <footer className="w-full bg-slate-900/90 border-t border-slate-800/80 px-8 py-4 flex justify-end gap-6 relative z-10 shrink-0">
       <button
         type="button"
         onClick={goQuizRegister}
