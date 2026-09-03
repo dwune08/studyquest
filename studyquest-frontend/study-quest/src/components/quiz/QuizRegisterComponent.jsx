@@ -1,10 +1,11 @@
 import { useState } from "react";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
+import { useAuth } from "../../hooks/useAuth";
 
-// props로 받던 teacherNo를 내부에서 처리하므로 파라미터는 비워둡니다.
-const QuizRegisterComponent = ({teacherNo}) => {
+const QuizRegisterComponent = () => {
   const { goQuizList } = useCustomNavigate();
+  const { teacherNo, currentNo } = useAuth();
 
   const [form, setForm] = useState({
     quizTitle: "",
@@ -26,11 +27,16 @@ const QuizRegisterComponent = ({teacherNo}) => {
     }));
   };
 
+  // ★ 수정: e.target.value(string)와 form.quizType(number) 비교 타입 일치 처리
   const changeQuizType = (e) => {
-    const quizType = Number(e.target.value);
+    const newQuizType = Number(e.target.value);
+    
+    // 이미 같은 유형이라면 리셋하지 않음
+    if (Number(form.quizType) === newQuizType) return;
+
     setForm((prev) => ({
       ...prev,
-      quizType,
+      quizType: newQuizType,
       quizAnswer: "",
       choice1: "",
       choice2: "",
@@ -43,8 +49,8 @@ const QuizRegisterComponent = ({teacherNo}) => {
   const submitQuiz = async (e) => {
     e.preventDefault();
 
-    // 4. 전송 전 teacherNo 유효성 검사 추가 (값이 없으면 에러 방지 및 알림)
-    if (!teacherNo) {
+    const targetTeacherNo = teacherNo || currentNo;
+    if (!targetTeacherNo) {
       alert("로그인 정보(교사 번호)를 찾을 수 없습니다. 다시 로그인해 주세요.");
       return;
     }
@@ -57,34 +63,52 @@ const QuizRegisterComponent = ({teacherNo}) => {
       alert("문제를 입력해주세요.");
       return;
     }
+
+    // 5지선다 유효성 검사
+    if (Number(form.quizType) === 0) {
+      if (
+        !form.choice1.trim() ||
+        !form.choice2.trim() ||
+        !form.choice3.trim() ||
+        !form.choice4.trim() ||
+        !form.choice5.trim()
+      ) {
+        alert("5지선다 보기(1번~5번 선택지)를 모두 입력해 주세요.");
+        return;
+      }
+    }
+
     if (form.quizAnswer === "" || form.quizAnswer === null) {
       alert("정답을 입력/선택해주세요.");
       return;
     }
 
-    // Backend QuizDTO Integer quizAnswer 대응
     let formattedAnswer = null;
-    if (form.quizType === 0) {
+    const currentType = Number(form.quizType);
+
+    if (currentType === 0) {
       formattedAnswer = Number(form.quizAnswer);
-    } else if (form.quizType === 2) {
+    } else if (currentType === 2) {
       formattedAnswer = form.quizAnswer === "O" ? 1 : 2;
-    } else if (form.quizType === 1) {
+    } else if (currentType === 1) {
       formattedAnswer = Number(form.quizAnswer);
     }
 
-    // 백엔드 QuizDTO 매핑
     const payload = {
-      teacherNo: Number(teacherNo), // 확실하게 숫자로 변환하여 전송
+      teacherNo: Number(targetTeacherNo),
       quizTitle: form.quizTitle,
-      quizType: form.quizType,
+      quizType: currentType,
       quizQuestion: form.quizQuestion,
       quizAnswer: formattedAnswer,
-      choice1: form.quizType === 0 ? form.choice1 : null,
-      choice2: form.quizType === 0 ? form.choice2 : null,
-      choice3: form.quizType === 0 ? form.choice3 : null,
-      choice4: form.quizType === 0 ? form.choice4 : null,
-      choice5: form.quizType === 0 ? form.choice5 : null,
+      choice1: currentType === 0 ? form.choice1 : null,
+      choice2: currentType === 0 ? form.choice2 : null,
+      choice3: currentType === 0 ? form.choice3 : null,
+      choice4: currentType === 0 ? form.choice4 : null,
+      choice5: currentType === 0 ? form.choice5 : null,
     };
+
+    // F12 개발자 도구 콘솔에서 payload 값 확인용
+    console.log("전송 데이터 Payload:", payload);
 
     try {
       const response = await jwtAxios.post("/quizzes", payload);
@@ -156,29 +180,57 @@ const QuizRegisterComponent = ({teacherNo}) => {
             />
 
             {/* 0 : 5지선다 */}
-            {form.quizType === 0 && (
+            {Number(form.quizType) === 0 && (
               <div>
                 <p className="mb-4 text-sm font-bold text-blue-400">
                   5지선다 선택지
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
-                  {[
-                    "choice1",
-                    "choice2",
-                    "choice3",
-                    "choice4",
-                    "choice5",
-                  ].map((name, index) => (
-                    <input
-                      key={name}
-                      name={name}
-                      value={form[name]}
-                      onChange={changeForm}
-                      placeholder={`${index + 1}번 선택지`}
-                      maxLength={300}
-                      className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
-                    />
-                  ))}
+                  <input
+                    type="text"
+                    name="choice1"
+                    value={form.choice1}
+                    onChange={changeForm}
+                    placeholder="1번 선택지"
+                    maxLength={300}
+                    className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    name="choice2"
+                    value={form.choice2}
+                    onChange={changeForm}
+                    placeholder="2번 선택지"
+                    maxLength={300}
+                    className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    name="choice3"
+                    value={form.choice3}
+                    onChange={changeForm}
+                    placeholder="3번 선택지"
+                    maxLength={300}
+                    className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    name="choice4"
+                    value={form.choice4}
+                    onChange={changeForm}
+                    placeholder="4번 선택지"
+                    maxLength={300}
+                    className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    name="choice5"
+                    value={form.choice5}
+                    onChange={changeForm}
+                    placeholder="5번 선택지"
+                    maxLength={300}
+                    className="rounded-xl border border-slate-700 bg-[#071023] px-4 py-3 outline-none focus:border-blue-500"
+                  />
                 </div>
 
                 <div className="mt-6">
@@ -203,7 +255,7 @@ const QuizRegisterComponent = ({teacherNo}) => {
             )}
 
             {/* 1 : 단답형/빈칸 */}
-            {form.quizType === 1 && (
+            {Number(form.quizType) === 1 && (
               <div className="space-y-6">
                 <div>
                   <label className="mb-2 block text-sm font-bold text-violet-400">
@@ -222,7 +274,7 @@ const QuizRegisterComponent = ({teacherNo}) => {
             )}
 
             {/* 2 : O/X */}
-            {form.quizType === 2 && (
+            {Number(form.quizType) === 2 && (
               <div>
                 <p className="mb-4 text-sm font-bold text-cyan-400">
                   ⚡ O / X 문제
@@ -237,7 +289,7 @@ const QuizRegisterComponent = ({teacherNo}) => {
                     onClick={() =>
                       setForm((prev) => ({ ...prev, quizAnswer: "O" }))
                     }
-                    className={`rounded-2xl border py-10 text-5xl font-black transition ${
+                    className={`rounded-2xl border py-10 text-5xl font-black transition cursor-pointer ${
                       form.quizAnswer === "O"
                         ? "border-blue-500 bg-blue-500/20 text-blue-400"
                         : "border-slate-700 bg-[#071023] text-slate-400 hover:border-blue-500"
@@ -251,7 +303,7 @@ const QuizRegisterComponent = ({teacherNo}) => {
                     onClick={() =>
                       setForm((prev) => ({ ...prev, quizAnswer: "X" }))
                     }
-                    className={`rounded-2xl border py-10 text-5xl font-black transition ${
+                    className={`rounded-2xl border py-10 text-5xl font-black transition cursor-pointer ${
                       form.quizAnswer === "X"
                         ? "border-red-500 bg-red-500/20 text-red-400"
                         : "border-slate-700 bg-[#071023] text-slate-400 hover:border-red-500"
@@ -266,7 +318,7 @@ const QuizRegisterComponent = ({teacherNo}) => {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-4 text-lg font-bold shadow-lg transition hover:brightness-110"
+            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-4 text-lg font-bold shadow-lg transition hover:brightness-110 cursor-pointer"
           >
             ⚔ 퀴즈 등록하기
           </button>
