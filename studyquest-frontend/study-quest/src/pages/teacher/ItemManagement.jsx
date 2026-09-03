@@ -123,22 +123,46 @@ const ItemManagement = () => {
   };
 
   // 3. 퀴즈 수정 저장 (API 연동)
-  const handleEditSave = async () => {
-    try {
-      await jwtAxios.patch(`http://localhost:8080/quizzes/${editingQuiz.quizNo}`, editingQuiz);
-      
-      setQuizzes((prev) =>
-        prev.map((quiz) =>
-          quiz.quizNo === editingQuiz.quizNo ? editingQuiz : quiz
-        )
-      );
-      setEditingQuiz(null);
-      alert("수정되었습니다.");
-    } catch (error) {
-      console.error("퀴즈 수정 실패:", error);
-      alert(error.response?.data?.message || "퀴즈 수정에 실패했습니다.");
+  // 3. 퀴즈 수정 저장 (API 연동)
+const handleEditSave = async () => {
+  try {
+    // OX 퀴즈(quizType === 2)일 때 "O" -> "1", "X" -> "2" 매핑
+    let formattedAnswer = editingQuiz.quizAnswer;
+    
+    if (Number(editingQuiz.quizType) === 2) {
+      if (editingQuiz.quizAnswer === "O" || editingQuiz.quizAnswer === "1") formattedAnswer = "1";
+      if (editingQuiz.quizAnswer === "X" || editingQuiz.quizAnswer === "2") formattedAnswer = "2";
     }
-  };
+
+    // 백엔드 QuizDTO 규격에 맞춘 페이로드 구성
+    const payload = {
+      quizNo: editingQuiz.quizNo,
+      teacherNo: editingQuiz.teacherNo,
+      quizTitle: editingQuiz.quizTitle,
+      quizType: editingQuiz.quizType,
+      quizQuestion: editingQuiz.quizQuestion,
+      quizAnswer: formattedAnswer, // 💡 "1" 또는 "2"로 변환된 값
+      choice1: editingQuiz.choice1,
+      choice2: editingQuiz.choice2,
+      choice3: editingQuiz.choice3,
+      choice4: editingQuiz.choice4,
+      choice5: editingQuiz.choice5,
+    };
+
+    await jwtAxios.patch(`/quizzes/${editingQuiz.quizNo}`, payload);
+
+    setQuizzes((prev) =>
+      prev.map((quiz) =>
+        quiz.quizNo === editingQuiz.quizNo ? { ...editingQuiz, quizAnswer: formattedAnswer } : quiz
+      )
+    );
+    setEditingQuiz(null);
+    alert("수정되었습니다.");
+  } catch (error) {
+    console.error("퀴즈 수정 실패:", error);
+    alert(error.response?.data?.message || "퀴즈 수정에 실패했습니다.");
+  }
+};
 
   return (
     <div>
