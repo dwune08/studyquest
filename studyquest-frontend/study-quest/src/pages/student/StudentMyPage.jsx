@@ -282,12 +282,18 @@ const profileImage = getStudentLevelImage(currentLevel);
               </div>
 
               {/* 주간 랭킹 */}
-              <div className="rounded-2xl border border-slate-800 bg-[#081225]/80 p-6" onClick={goRank}>
+              <div 
+                onClick={goRank}
+                className="group rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 cursor-pointer transition-all duration-200 hover:border-blue-500/50 hover:bg-[#0c182e] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] active:scale-[0.99]"
+              >
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 group-hover:text-blue-300 transition-colors">
                     <span>🏆</span> 학년 주간 랭킹
                   </h3>
-                  <span className="text-[11px] font-semibold text-slate-500">TOP 5</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-400 transition-colors">TOP 5</span>
+                    <span className="text-xs text-slate-600 group-hover:text-blue-400 transition-colors">➔</span>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
