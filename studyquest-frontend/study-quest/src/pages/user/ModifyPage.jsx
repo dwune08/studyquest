@@ -1,16 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
+import { useAuth } from "../../hooks/useAuth";
 
 const ModifyPage = () => {
   const { no } = useParams();
   const { goStudentMyPage, goBack } = useCustomNavigate();
+  const { user, currentNo } = useAuth(); // 통합 인증 훅 활용 (Redux + LocalStorage 통합)
 
-  // Redux 로그인 정보 추출 (키값: userNo)
-  const loginUser = useSelector((state) => state.loginSlice) || {};
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     userType: "student",
     email: "",
@@ -21,45 +20,44 @@ const ModifyPage = () => {
     phone: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const isFetched = useRef(false);
+  // 백엔드 응답 데이터를 Form State 형태로 변환하는 매핑 헬퍼
+  const mapResponseToForm = (data) => ({
+    userType: data.userType === 2 || data.role === "TEACHER" ? "teacher" : "student",
+    email: data.userEmail || data.email || "",
+    password: "",
+    name: data.userName || data.name || "",
+    grade: String(data.studentGrade || data.grade || "3").replace("학년", ""),
+    birthDate: data.userBirth ? String(data.userBirth).slice(0, 10) : "",
+    phone: data.userPhone || data.phone || "",
+  });
 
-  useEffect(() => {
-  // 1. URL의 no 유효성 검사
+  // 1. 본인 회원 번호 계산
+const targetUserNo = user?.userNo || currentNo;
+
+useEffect(() => {
+  // 1-1. URL 파라미터 유효성 검사
   if (!no || no === "undefined") {
     alert("올바르지 않은 접근입니다.");
     goBack();
     return;
   }
 
-  if (isFetched.current) return;
-
-  // 2. 본인 확인 검증 (studentNo 또는 teacherNo와 비교)
-  const currentLoginNo = loginUser.studentNo || loginUser.teacherNo;
-  if (currentLoginNo && String(currentLoginNo) !== String(no)) {
-    alert("본인의 정보만 수정할 수 있습니다.");
-    goBack();
-    return;
+  // 1-2. targetUserNo가 로딩 완료된 시점에만 본인 검증
+  if (targetUserNo) {
+    if (String(targetUserNo) !== String(no)) {
+      alert("본인의 정보만 수정할 수 있습니다.");
+      goBack();
+      return;
+    }
   }
 
-  // 3. 회원 정보 조회 API 호출
+  // 1-3. 회원 정보 단건 조회 API
   const fetchMemberData = async () => {
     try {
-      isFetched.current = true;
       setLoading(true);
-
       const res = await jwtAxios.get(`/users/${no}`);
       if (res.data) {
-        const data = res.data;
-        setFormData({
-          userType: data.userType === 2 || data.role === "TEACHER" ? "teacher" : "student",
-          email: data.userEmail || data.email || "",
-          password: "",
-          name: data.userName || data.name || "",
-          grade: String(data.studentGrade || data.grade || "3").replace("학년", ""),
-          birthDate: data.userBirth ? String(data.userBirth).slice(0, 10) : "",
-          phone: data.userPhone || data.phone || "",
-        });
+        setFormData(mapResponseToForm(res.data));
       }
     } catch (err) {
       console.error("회원 정보 로딩 실패:", err);
@@ -70,8 +68,10 @@ const ModifyPage = () => {
   };
 
   fetchMemberData();
+
+// 💡 핵심: goBack이나 user 객체 전체 대신, 식별 문자열/숫자인 'no'와 'targetUserNo'만 의존성으로 전달합니다.
 // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [no]);
+}, [no, targetUserNo]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,7 +110,7 @@ const ModifyPage = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 text-slate-100 font-sans py-10 px-4 selection:bg-blue-500 selection:text-white">
       
-      {/* 헤더 타이틀 */}
+      {/* 타이틀 영역 */}
       <div className="flex items-center gap-3 mb-6 group cursor-default">
         <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(59,130,246,0.8)] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
           🗡️
@@ -120,12 +120,11 @@ const ModifyPage = () => {
         </h1>
       </div>
 
-      {/* 메인 퀘스트 패널 */}
+      {/* 폼 컨테이너 */}
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md h-[540px] flex flex-col relative overflow-hidden">
         
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* 상단 탭 헤더 */}
         <div className="grid grid-cols-1 border-b border-slate-800/80 pb-3 shrink-0 relative z-10">
           <div className="text-center text-base font-bold pb-2 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)] relative">
             [ 회원정보 수정 ]
@@ -133,16 +132,12 @@ const ModifyPage = () => {
           </div>
         </div>
 
-        {/* 폼 메인 프레임 */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between pt-6 relative z-10">
-          
           <div className="flex flex-col gap-3.5">
             
-            {/* 1. 사용자 구분 (수정 불가) */}
+            {/* 사용자 구분 (비활성화) */}
             <div className="flex items-center justify-between gap-2 h-9">
-              <label className="text-xs font-semibold text-slate-500 shrink-0">
-                사용자 구분
-              </label>
+              <label className="text-xs font-semibold text-slate-500 shrink-0">사용자 구분</label>
               <div className="flex gap-3 bg-slate-950/30 border border-slate-800/60 rounded-lg p-1.5 px-3 opacity-60">
                 <label className="flex items-center gap-1.5 cursor-not-allowed text-xs text-slate-500">
                   <input
@@ -168,24 +163,16 @@ const ModifyPage = () => {
               </div>
             </div>
 
-            {/* 2. 이메일 주소 (수정 불가) */}
+            {/* 이메일 주소 (비활성화) */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500">
-                이메일 주소
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                disabled
-                className={disabledInputStyle}
-              />
+              <label className="text-xs font-semibold text-slate-500">이메일 주소</label>
+              <input type="email" value={formData.email} disabled className={disabledInputStyle} />
             </div>
 
-            {/* 3. 비밀번호 (수정 가능) */}
+            {/* 비밀번호 */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-blue-300 flex items-center gap-1">
-                비밀번호 
-                <span className="text-[10px] text-blue-400/80 font-normal">(변경시에만 입력)</span>
+                비밀번호 <span className="text-[10px] text-blue-400/80 font-normal">(변경시에만 입력)</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse ml-auto" title="수정 가능" />
               </label>
               <input
@@ -198,7 +185,7 @@ const ModifyPage = () => {
               />
             </div>
 
-            {/* 4. 이름(수정 가능) / 학년(수정 불가) */}
+            {/* 이름 / 학년 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-blue-300 flex items-center justify-between">
@@ -217,32 +204,22 @@ const ModifyPage = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">
-                  학년
-                </label>
+                <label className="text-xs font-semibold text-slate-500">학년</label>
                 <div className="relative">
-                  <select
-                    value={formData.grade}
-                    disabled
-                    className={disabledInputStyle}
-                  >
+                  <select value={formData.grade} disabled className={disabledInputStyle}>
                     <option value="1">1학년</option>
                     <option value="2">2학년</option>
                     <option value="3">3학년</option>
                   </select>
-                  <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-xs text-slate-600">
-                    ▼
-                  </span>
+                  <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-xs text-slate-600">▼</span>
                 </div>
               </div>
             </div>
 
-            {/* 5. 생년월일(수정 불가) / 연락처(수정 가능) */}
+            {/* 생년월일 / 연락처 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">
-                  생년월일
-                </label>
+                <label className="text-xs font-semibold text-slate-500">생년월일</label>
                 <input
                   type="text"
                   value={formData.birthDate}
@@ -271,7 +248,6 @@ const ModifyPage = () => {
 
           </div>
 
-          {/* 서브밋 버튼 */}
           <button
             type="submit"
             disabled={loading}
@@ -279,7 +255,6 @@ const ModifyPage = () => {
           >
             {loading ? "수정 중..." : "🗡️ 캐릭터 정보 수정"}
           </button>
-
         </form>
       </div>
     </div>
