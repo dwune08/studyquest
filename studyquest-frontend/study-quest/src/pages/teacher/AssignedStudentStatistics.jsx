@@ -22,7 +22,7 @@ export default function AssignedStudentStatistics() {
         setLoading(true);
       }
       
-      const response = await jwtAxios.get(`http://localhost:8080/teacher/student-results?teacherNo=${teacherNo}`);
+      const response = await jwtAxios.get(`http://localhost:8080/teachers/student-results?teacherNo=${teacherNo}`);
 
       const data = response.data;
       let extractedList = [];
