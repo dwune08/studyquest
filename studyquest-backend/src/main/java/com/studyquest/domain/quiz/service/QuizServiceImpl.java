@@ -23,14 +23,15 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
 
-    // QuizServiceImpl.java
+
     @Override
-    public PageResponseDTO<QuizDTO> getQuizList(PageRequestDTO pageRequestDTO, Integer quizType, Long teacherNo) {
+    public PageResponseDTO<QuizDTO> getQuizList(PageRequestDTO pageRequestDTO, Integer quizType, Long teacherNo, Long studentNo) {
         Pageable pageable = pageRequestDTO.getPageable("quizNo");
 
         Page<Quiz> result = quizRepository.findAllWithFilters(
                 quizType,
                 teacherNo,
+                studentNo, // 👈 Repository로 전달
                 pageRequestDTO.getSearchType(),
                 pageRequestDTO.getKeyword(),
                 pageable

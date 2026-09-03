@@ -1,30 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
+import { useAuth } from "../../hooks/useAuth";
 
 const QuizDetailPage = () => {
-  // 라우터 설정의 path: ":no" 에 맞춰 'no'로 구조분해 할당 (또는 no: quizNo 별칭 지정)
   const { no: quizNo } = useParams();
-  const navigate = useNavigate();
-  const { goQuizList } = useCustomNavigate();
+  const { goQuizList, goQuizResult } = useCustomNavigate();
+  const { user, student } = useAuth(); // 인증 훅에서 학생 정보 추출
 
   const [quiz, setQuiz] = useState(null);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 1. GET /quizzes/{quizNo} API 연동
+  // 1. 퀴즈 상세 데이터 조회
   useEffect(() => {
-    const loadQuiz = async () => {
+    if (!quizNo) return;
+
+    const fetchQuizDetail = async () => {
       try {
         setLoading(true);
         setError("");
 
-        console.log("요청 quizNo:", quizNo);
         const res = await jwtAxios.get(`/quizzes/${quizNo}`);
-        console.log("백엔드 응답:", res.data);
-
         if (res.data) {
           setQuiz(res.data);
         } else {
@@ -38,56 +37,54 @@ const QuizDetailPage = () => {
       }
     };
 
-    if (quizNo) {
-      loadQuiz();
-    }
+    fetchQuizDetail();
   }, [quizNo]);
 
-  // 2. 답안 제출
+  // 2. 답안 제출 처리
   const handleSubmit = async () => {
-    if (!answer && answer !== 0) {
+    if (answer === "" || answer === null || answer === undefined) {
       alert("답을 선택하거나 입력해 주세요.");
       return;
     }
 
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const studentNo = storedUser.userNo || null;
+    const currentStudentNo = student?.studentNo || user?.studentNo;
 
+    if (!currentStudentNo) {
+      alert("학생 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
+      return;
+    }
+
+    try {
       const resultDTO = {
-        studentNo: studentNo,
+        studentNo: Number(currentStudentNo),
         quizNo: Number(quizNo),
         resultAnswer: String(answer),
       };
 
       const res = await jwtAxios.post("/results", resultDTO);
 
-      navigate(`/quizzes/${quizNo}/result`, {
-        state: {
-          quiz,
-          answer,
-          result: res.data,
-        },
-      });
+      // 백엔드 반환 데이터(res.data)와 quiz 객체를 규격에 맞춰 전달
+      const resultData = {
+        isCorrect: res.data.correct ?? res.data.isCorrect, // 백엔드 DTO 필드명 대응
+        resultAnswer: String(answer),
+      };
+
+      // 결과 페이지로 이동 (useCustomNavigate의 goQuizResult 활용)
+      if (typeof goQuizResult === "function") {
+        goQuizResult(quizNo, { quiz, resultData });
+      } else {
+        // fallback 라우팅
+        window.history.pushState(
+          { quiz, resultData },
+          "",
+          `/quizzes/${quizNo}/result`
+        );
+      }
     } catch (err) {
       console.error("답안 제출 실패:", err);
       alert(err.response?.data?.message || "답안 제출에 실패했습니다.");
     }
   };
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#020617] text-red-400 gap-4">
-        <p>{error}</p>
-        <button
-          onClick={goQuizList}
-          className="rounded-xl border border-slate-700 px-5 py-2 text-sm text-slate-300 hover:border-blue-500 cursor-pointer"
-        >
-          목록으로 돌아가기
-        </button>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -97,10 +94,10 @@ const QuizDetailPage = () => {
     );
   }
 
-  if (!quiz) {
+  if (error || !quiz) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#020617] text-slate-400 gap-4">
-        <p>존재하지 않거나 불러올 수 없는 퀴즈입니다.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#020617] text-red-400 gap-4">
+        <p>{error || "존재하지 않거나 불러올 수 없는 퀴즈입니다."}</p>
         <button
           onClick={goQuizList}
           className="rounded-xl border border-slate-700 px-5 py-2 text-sm text-slate-300 hover:border-blue-500 cursor-pointer"
@@ -112,16 +109,19 @@ const QuizDetailPage = () => {
   }
 
   const quizTypeNum = Number(quiz.quizType);
+  const choices = [quiz.choice1, quiz.choice2, quiz.choice3, quiz.choice4, quiz.choice5].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#020617] px-6 py-10 text-white">
       <div className="mx-auto max-w-4xl">
-        {/* LOGO */}
+        
+        {/* 타이틀 */}
         <h1 className="mb-8 text-center text-3xl font-black tracking-[0.2em]">
           🗡️ STUDY:QUEST
         </h1>
 
         <div className="overflow-hidden rounded-3xl border border-slate-700 bg-[#0f1a2e] shadow-[0_0_40px_rgba(37,99,235,0.14)]">
+          
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-700 px-8 py-5">
             <div>
@@ -142,38 +142,33 @@ const QuizDetailPage = () => {
               </p>
             </div>
 
-            {/* 0 = 5지선다 */}
+            {/* TYPE 0: 5지선다 */}
             {quizTypeNum === 0 && (
               <div className="grid grid-cols-1 gap-4">
-                {[
-                  quiz.choice1,
-                  quiz.choice2,
-                  quiz.choice3,
-                  quiz.choice4,
-                  quiz.choice5,
-                ].map(
-                  (choice, index) =>
-                    choice && (
-                      <button
-                        key={index}
-                        onClick={() => setAnswer(index + 1)}
-                        className={`rounded-2xl border px-6 py-5 text-left transition cursor-pointer ${
-                          Number(answer) === index + 1
-                            ? "border-blue-500 bg-blue-500/10 text-blue-300 shadow-md shadow-blue-500/10"
-                            : "border-slate-700 bg-[#081225] hover:border-blue-500"
-                        }`}
-                      >
-                        <span className="mr-4 font-bold text-blue-400">
-                          {index + 1}.
-                        </span>
-                        {choice}
-                      </button>
-                    )
-                )}
+                {choices.map((choice, index) => {
+                  const choiceNum = index + 1;
+                  const isSelected = String(answer) === String(choiceNum);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setAnswer(choiceNum)}
+                      className={`rounded-2xl border px-6 py-5 text-left transition cursor-pointer ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-500/10 text-blue-300 shadow-md shadow-blue-500/10"
+                          : "border-slate-700 bg-[#081225] hover:border-blue-500"
+                      }`}
+                    >
+                      <span className="mr-4 font-bold text-blue-400">
+                        {choiceNum}.
+                      </span>
+                      {choice}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            {/* 1 = 빈칸채우기 */}
+            {/* TYPE 1: 주관식 */}
             {quizTypeNum === 1 && (
               <div>
                 <label className="mb-3 block text-sm text-slate-400">
@@ -189,30 +184,30 @@ const QuizDetailPage = () => {
               </div>
             )}
 
-            {/* 2 = O/X 퀴즈 */}
+            {/* TYPE 2: O/X */}
             {quizTypeNum === 2 && (
               <div className="grid grid-cols-2 gap-6">
-                <button
-                  onClick={() => setAnswer("O")}
-                  className={`rounded-2xl border py-16 text-7xl font-black transition cursor-pointer ${
-                    String(answer) === "O"
-                      ? "border-blue-500 bg-blue-500/10 text-blue-400 shadow-lg shadow-blue-500/20"
-                      : "border-slate-700 bg-[#081225] text-blue-400 hover:border-blue-500"
-                  }`}
-                >
-                  O
-                </button>
-
-                <button
-                  onClick={() => setAnswer("X")}
-                  className={`rounded-2xl border py-16 text-7xl font-black transition cursor-pointer ${
-                    String(answer) === "X"
-                      ? "border-red-500 bg-red-500/10 text-red-400 shadow-lg shadow-red-500/20"
-                      : "border-slate-700 bg-[#081225] text-red-400 hover:border-red-500"
-                  }`}
-                >
-                  X
-                </button>
+                {["O", "X"].map((option) => {
+                  const isSelected = String(answer) === option;
+                  const isO = option === "O";
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => setAnswer(option)}
+                      className={`rounded-2xl border py-16 text-7xl font-black transition cursor-pointer ${
+                        isSelected
+                          ? isO
+                            ? "border-blue-500 bg-blue-500/10 text-blue-400 shadow-lg shadow-blue-500/20"
+                            : "border-red-500 bg-red-500/10 text-red-400 shadow-lg shadow-red-500/20"
+                          : isO
+                          ? "border-slate-700 bg-[#081225] text-blue-400 hover:border-blue-500"
+                          : "border-slate-700 bg-[#081225] text-red-400 hover:border-red-500"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -233,6 +228,7 @@ const QuizDetailPage = () => {
               답안 제출
             </button>
           </div>
+
         </div>
       </div>
     </div>

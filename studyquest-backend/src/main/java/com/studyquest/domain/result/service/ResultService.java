@@ -7,7 +7,7 @@ import com.studyquest.domain.result.dto.ResultDTO;
 public interface ResultService {
 
     // 퀴즈 제출 결과 저장 (채점 결과 및 제출 답안 기록)
-    ResultDTO saveResult(Long studentNo, Long quizNo, String resultAnswer, Boolean isCorrect);
+    public ResultDTO saveResult(Long studentNo, Long quizNo, String resultAnswer);
 
     // 학생 본인의 전체 제출 이력 목록 조회 (페이징)
     PageResponseDTO<ResultDTO> getMyResults(Long studentNo, PageRequestDTO pageRequestDTO);
