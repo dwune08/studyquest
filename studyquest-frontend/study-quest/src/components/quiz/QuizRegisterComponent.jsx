@@ -2,10 +2,12 @@ import { useState } from "react";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const QuizRegisterComponent = () => {
   const { goQuizList } = useCustomNavigate();
   const { teacherNo, currentNo } = useAuth();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     quizTitle: "",
@@ -115,13 +117,18 @@ const QuizRegisterComponent = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert("퀴즈가 성공적으로 등록되었습니다!");
-        goQuizList();
+        navigate("/teacher", {
+  state: {
+    activeMenu: "quizzes",
+  },
+});
       }
     } catch (error) {
       console.error("퀴즈 등록 실패:", error);
       alert("퀴즈 등록 중 오류가 발생했습니다.");
     }
   };
+
 
   return (
     <div className="min-h-screen overflow-y-auto bg-[#020817] pb-32 text-white">

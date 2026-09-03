@@ -103,10 +103,9 @@ const BasicLayout = ({
 
         <nav className="shrink-0 w-full">
           <FooterMenu
-            userType={finalUserType}
+            userType={userInfo?.userType}
             onAttendanceClick={handleAttendance}
-            onQuizDungeonClick={handleQuizDungeon}
-          />
+            onQuizDungeonClick={handleQuizDungeon}/>
         </nav>
       </div>
     </div>
