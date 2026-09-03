@@ -1,37 +1,32 @@
 package com.studyquest.domain.attendance.controller;
 
-import com.studyquest.domain.attendance.dto.AttendanceCheckResponseDTO;
 import com.studyquest.domain.attendance.dto.AttendanceDTO;
 import com.studyquest.domain.attendance.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/event")
-@PreAuthorize("hasRole('STUDENT')") // 컨트롤러 전체 클래스 레벨에 학생 권한 부여
 public class EventController {
 
     private final AttendanceService attendanceService;
 
-    // 학생 전용 내 출석 현황 조회 (GET /event)
+    // 1. 내 출석 정보 조회
     @GetMapping
     public ResponseEntity<AttendanceDTO> getMyAttendance(
-            @AuthenticationPrincipal Long loginStudentNo
+            @RequestParam("studentNo") Long studentNo
     ) {
-        AttendanceDTO attendance = attendanceService.getMyAttendance(loginStudentNo);
+        AttendanceDTO attendance = attendanceService.getMyAttendance(studentNo);
         return ResponseEntity.ok(attendance);
     }
 
-    // 학생 전용 출석 체크 진행 (POST /event)
+    // 2. 출석 체크 진행
     @PostMapping
-    public ResponseEntity<AttendanceCheckResponseDTO> checkIn(
-            @AuthenticationPrincipal Long loginStudentNo
+    public ResponseEntity<AttendanceDTO> checkIn(
+            @RequestParam("studentNo") Long studentNo
     ) {
-        AttendanceCheckResponseDTO response = attendanceService.doCheckIn(loginStudentNo);
+        AttendanceDTO response = attendanceService.doCheckIn(studentNo);
         return ResponseEntity.ok(response);
     }
 }

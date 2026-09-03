@@ -1,49 +1,50 @@
 import { useState, useEffect, useCallback } from "react";
 import BasicLayout from "../layouts/BasicLayout";
 import jwtAxios from "../api/jwtAxios";
+import { useAuth } from "../hooks/useAuth";
+import { useAuthGuard } from "../hooks/useAuthGuard";
 
-const MainDashboardPage = () => {
+const RankPage = () => {
+  useAuthGuard();
+  const { studentNo: myStudentNo } = useAuth();
+
   const ITEMS_PER_PAGE = 6;
-  
-  // PageRequestDTO의 기본 page는 1부터 시작
-  const [currentPage, setCurrentPage] = useState(1); 
+
+  // 💡 핵심: 초기값을 null로 설정하여 최초 요청 시 page 파라미터를 안 넘김
+  const [currentPage, setCurrentPage] = useState(null);
   const [rankings, setRankings] = useState([]);
   const [pageInfo, setPageInfo] = useState({
     totalPage: 1,
     prev: false,
     next: false,
-    prevPage: 1,
-    nextPage: 1,
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // 로컬스토리지에서 로그인한 내 정보 가져오기
-  const storedUser = localStorage.getItem("userInfo");
-  const myStudentNo = storedUser ? JSON.parse(storedUser).userNo : null;
-
-  // 랭킹 데이터 불러오기 함수
-  const fetchRankings = useCallback(async (page) => {
+  // 데이터 로딩 함수
+  const loadData = useCallback(async (page) => {
     setIsLoading(true);
     try {
-      // GET /ranks?page=1&size=6
-      const response = await jwtAxios.get("/ranks", {
-        params: {
-          page: page,
-          size: ITEMS_PER_PAGE,
-        },
-      });
-
-      // 백엔드 PageResponseDTO 응답 필드 매핑
-      const { dtoList, totalPage, prev, next, prevPage, nextPage } = response.data;
+      const params = { size: ITEMS_PER_PAGE };
       
+      // page가 null이 아닐 때만(버튼을 눌러 페이지 이동 시만) page 파라미터 전송
+      if (page !== null) {
+        params.page = page;
+      }
+
+      const response = await jwtAxios.get("/ranks", { params });
+      const { dtoList, totalPage, prev, next, currentPage: responsePage } = response.data;
+
       setRankings(dtoList || []);
       setPageInfo({
         totalPage: totalPage || 1,
         prev,
         next,
-        prevPage,
-        nextPage,
       });
+
+      // 💡 백엔드가 자동 계산해서 내려준 내 페이지 번호로 state 업데이트
+      if (page === null && responsePage) {
+        setCurrentPage(responsePage);
+      }
     } catch (error) {
       console.error("랭킹 데이터 조회 실패:", error);
     } finally {
@@ -51,22 +52,22 @@ const MainDashboardPage = () => {
     }
   }, []);
 
-  // 페이지 변경 시 API 재호출
   useEffect(() => {
-    fetchRankings(currentPage);
-  }, [currentPage, fetchRankings]);
+    loadData(currentPage);
+  }, [currentPage, loadData]);
 
-  // 이전 페이지 이동 핸들러 (루프 순환 방식)
+  // 이전 페이지 이동 (순환)
   const handlePrev = () => {
-    setCurrentPage((prev) => (prev <= 1 ? pageInfo.totalPage : prev - 1));
+    const activePage = currentPage || 1;
+    setCurrentPage(activePage <= 1 ? pageInfo.totalPage : activePage - 1);
   };
 
-  // 다음 페이지 이동 핸들러 (루프 순환 방식)
+  // 다음 페이지 이동 (순환)
   const handleNext = () => {
-    setCurrentPage((prev) => (prev >= pageInfo.totalPage ? 1 : prev + 1));
+    const activePage = currentPage || 1;
+    setCurrentPage(activePage >= pageInfo.totalPage ? 1 : activePage + 1);
   };
 
-  // 순위에 따른 메달 반환 함수
   const getMedal = (rank) => {
     if (rank === 1) return "🥇";
     if (rank === 2) return "🥈";
@@ -77,14 +78,10 @@ const MainDashboardPage = () => {
   return (
     <BasicLayout>
       <div className="w-full flex-1 flex items-center justify-center p-6 bg-slate-950 text-slate-100 font-sans relative selection:bg-blue-500 selection:text-white">
-        
-        {/* 배경 오로라 */}
         <div className="absolute w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
-        {/* 메인 카드 */}
         <div className="w-full max-w-lg h-[500px] bg-slate-900/90 border border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] backdrop-blur-md relative z-10 flex flex-col justify-between">
           
-          {/* 이전 화살표 */}
           <button
             type="button"
             onClick={handlePrev}
@@ -94,7 +91,6 @@ const MainDashboardPage = () => {
             ◀
           </button>
 
-          {/* 다음 화살표 */}
           <button
             type="button"
             onClick={handleNext}
@@ -104,17 +100,15 @@ const MainDashboardPage = () => {
             ▶
           </button>
 
-          {/* 카드 상단 타이틀 바 */}
           <div className="flex items-center justify-between w-full mb-4 px-1">
             <h2 className="text-xl font-bold text-slate-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               🏆 학급 주간 랭킹
             </h2>
             <span className="text-xs font-semibold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
-              {currentPage} / {pageInfo.totalPage}
+              {currentPage || 1} / {pageInfo.totalPage}
             </span>
           </div>
 
-          {/* 리스트 영역 */}
           <div className="w-full h-[380px] flex flex-col justify-start gap-2.5">
             {isLoading ? (
               <div className="h-full flex items-center justify-center text-slate-500 text-sm">
@@ -137,7 +131,6 @@ const MainDashboardPage = () => {
                         : "bg-slate-950/40 border-slate-800/80 text-slate-300 hover:bg-slate-800/50"
                     }`}
                   >
-                    {/* 순위 & 메달 */}
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-black min-w-[42px] text-slate-400 whitespace-nowrap">
                         {item.rank}위
@@ -145,7 +138,6 @@ const MainDashboardPage = () => {
                       <span className="text-lg">{getMedal(item.rank)}</span>
                     </div>
 
-                    {/* 이름 & 레벨 */}
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm">
                         {item.studentName}
@@ -159,11 +151,10 @@ const MainDashboardPage = () => {
               })
             )}
           </div>
-
         </div>
       </div>
     </BasicLayout>
   );
 };
 
-export default MainDashboardPage;
+export default RankPage;
