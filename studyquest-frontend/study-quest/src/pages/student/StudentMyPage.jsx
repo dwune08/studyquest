@@ -17,10 +17,10 @@ const StudentMyPage = () => {
 
   const handleEditClick = () => {
   // Redux에서 학생 번호(studentNo) 또는 API response(status)의 studentNo 참조
-  const currentStudentNo = loginUser?.studentNo || status?.studentNo;
+  const currentUserNo = loginUser?.userNo || status?.userNo;
 
-  if (currentStudentNo) {
-    goModify(currentStudentNo);
+  if (currentUserNo) {
+    goModify(currentUserNo);
   } else {
     alert("회원 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
   }
