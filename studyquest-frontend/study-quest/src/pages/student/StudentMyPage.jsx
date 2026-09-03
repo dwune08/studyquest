@@ -259,6 +259,7 @@ const profileImage = getStudentLevelImage(currentLevel);
                     </p>
                     <p className="mt-1 text-[11px] text-slate-500">5지선다</p>
                   </div>
+                  
 
                   {/* 지혜 */}
                   <div className="rounded-xl border border-slate-800 bg-[#0f1a2e] p-5 transition-all hover:border-purple-500/50 hover:scale-[1.02]">
