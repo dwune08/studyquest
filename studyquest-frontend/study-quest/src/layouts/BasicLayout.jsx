@@ -2,7 +2,7 @@ import FooterMenu from "../components/menus/FooterMenu";
 import TopMenu from "../components/menus/TopMenu";
 import { useCustomNavigate } from "../hooks/useCustomNavigate";
 
-const BasicLayout = ({ children, userInfo, onAttendanceClick, onQuizDungeonClick, onLogout }) => {
+const BasicLayout = ({ children, userInfo, onAttendanceClick, onQuizDungeonClick, onLogout, userType }) => {
   const { goEvent, goQuizList } = useCustomNavigate();
 
   const handleAttendance = (e) => {
@@ -15,10 +15,13 @@ const BasicLayout = ({ children, userInfo, onAttendanceClick, onQuizDungeonClick
     goQuizList();
   };
 
+  // 💡 userInfo.userType이 있으면 그걸 쓰고, 없으면 직접 전달된 userType Prop을 사용
+  const finalUserType = userInfo?.userType ?? userType;
+
   return (
     <div className="w-screen h-screen min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between overflow-hidden font-sans">
       
-      {/* 상단 헤더 영역 (userInfo 전달 가능) */}
+      {/* 상단 헤더 영역 */}
       <TopMenu {...userInfo} onLogout={onLogout} />
 
       {/* 메인 컨테이너 */}
@@ -30,6 +33,7 @@ const BasicLayout = ({ children, userInfo, onAttendanceClick, onQuizDungeonClick
         {/* 하단 메뉴 */}
         <nav className="shrink-0 w-full">
           <FooterMenu 
+            userType={finalUserType}
             onAttendanceClick={handleAttendance}
             onQuizDungeonClick={handleQuizDungeon}
           />

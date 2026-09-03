@@ -16,15 +16,15 @@ const StudentMyPage = () => {
   const loginUser = useSelector((state) => state.loginSlice);
 
   const handleEditClick = () => {
-  // Redux에서 학생 번호(studentNo) 또는 API response(status)의 studentNo 참조
-  const currentUserNo = loginUser?.userNo || status?.userNo;
+    // Redux에서 학생 번호(studentNo) 또는 API response(status)의 studentNo 참조
+    const currentUserNo = loginUser?.userNo || status?.userNo;
 
-  if (currentUserNo) {
-    goModify(currentUserNo);
-  } else {
-    alert("회원 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
-  }
-};
+    if (currentUserNo) {
+      goModify(currentUserNo);
+    } else {
+      alert("회원 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,15 +81,17 @@ const StudentMyPage = () => {
     statusSpeed: 0,
   };
 
+  // 헤더(TopMenu)로 전달되는 정보 (role: "student" 추가)
   const topMenuUserInfo = {
-  userName: currentStatus.studentName,
-  userLevel: currentStatus.statusLevel,
-  currentExp: currentStatus.statusExp,
-  maxExp: currentStatus.nextLevelExp,
-};
+    role: "student",
+    userName: currentStatus.studentName,
+    userLevel: currentStatus.statusLevel,
+    currentExp: currentStatus.statusExp,
+    maxExp: currentStatus.nextLevelExp,
+  };
 
-const currentLevel = currentStatus.statusLevel ?? 1;
-const profileImage = getStudentLevelImage(currentLevel);
+  const currentLevel = currentStatus.statusLevel ?? 1;
+  const profileImage = getStudentLevelImage(currentLevel);
 
   const expPercent =
     currentStatus.nextLevelExp > 0
@@ -173,45 +175,44 @@ const profileImage = getStudentLevelImage(currentLevel);
             {/* 왼쪽: 프로필 아바타 */}
             <section className="space-y-6">
               <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#081225]/80 p-6 text-center h-full min-h-[220px]">
-                <div
-  className="
-    relative
-    flex
-    h-32
-    w-32
-    items-center
-    justify-center
-    overflow-hidden
-    rounded-2xl
-    border-2
-    border-blue-500/50
-    bg-[#071023]
-    shadow-[0_0_25px_rgba(59,130,246,0.35)]
-  "
->
-  <img
-    src={profileImage}
-    alt={`레벨 ${currentLevel} 학생 프로필`}
-    className="h-full w-full object-contain p-1"
-  />
+                <div className="
+                    relative
+                    flex
+                    h-32
+                    w-32
+                    items-center
+                    justify-center
+                    overflow-hidden
+                    rounded-2xl
+                    border-2
+                    border-blue-500/50
+                    bg-[#071023]
+                    shadow-[0_0_25px_rgba(59,130,246,0.35)]
+                  "
+                >
+                  <img
+                    src={profileImage}
+                    alt={`레벨 ${currentLevel} 학생 프로필`}
+                    className="h-full w-full object-contain p-1"
+                  />
 
-  <div
-    className="
-      absolute
-      left-2
-      top-2
-      rounded-md
-      bg-black/60
-      px-2
-      py-1
-      text-[11px]
-      font-bold
-      text-white
-    "
-  >
-    Lv. {currentLevel}
-  </div>
-</div>
+                  <div
+                    className="
+                      absolute
+                      left-2
+                      top-2
+                      rounded-md
+                      bg-black/60
+                      px-2
+                      py-1
+                      text-[11px]
+                      font-bold
+                      text-white
+                    "
+                  >
+                    Lv. {currentLevel}
+                  </div>
+                </div>
 
                 <h3 className="mt-4 text-lg font-bold text-slate-100">
                   {currentStatus.studentName}
@@ -221,7 +222,7 @@ const profileImage = getStudentLevelImage(currentLevel);
                   {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
                 </p>
 
-                {/* ⚙️ 정보 수정 버튼 (3학년 바로 밑에 또렷하게 배치) */}
+                {/* ⚙️ 정보 수정 버튼 */}
                 <button
                   type="button"
                   onClick={handleEditClick}
@@ -232,6 +233,7 @@ const profileImage = getStudentLevelImage(currentLevel);
 
               </div>
             </section>            
+            
             {/* 오른쪽: 스탯 및 랭킹 영역 */}
             <section className="space-y-6">
               

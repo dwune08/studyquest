@@ -1,7 +1,8 @@
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 
-const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick }) => {
-  const { goQuizList, goEvent } = useCustomNavigate();
+const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick, userType }) => {
+  const { goQuizList, goEvent, goQuizRegister } = useCustomNavigate();
+
 
   // 1. 출석체크 버튼 클릭 처리
   const handleAttendanceClick = (e) => {
@@ -11,13 +12,27 @@ const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick }) => {
     goEvent(); // 페이지 이동 처리
   };
 
-  // 2. 퀴즈 던전 버튼 클릭 처리
+  // 2. 퀴즈 던전 버튼 클릭 처리(학생용)
   const handleQuizDungeonClick = (e) => {
     if (onQuizDungeonClick) {
       onQuizDungeonClick(e); // 상위에서 전달한 함수 실행
     }
     goQuizList(); // 페이지 이동 처리
   };
+
+  if (userType === 2) {
+    return (
+      <footer className="py-4 px-12 bg-[#070a12] border-t border-gray-900 flex justify-end shrink-0">
+      <button
+        type="button"
+        onClick={goQuizRegister}
+        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all cursor-pointer active:scale-95"
+      >
+        🔮 신규 던전 생성
+      </button>
+    </footer>
+    )
+  }
 
   return (
     <footer className="w-full bg-slate-900/90 border-t border-slate-800/80 px-8 py-4 flex items-center justify-center gap-6 relative z-10 shrink-0">
