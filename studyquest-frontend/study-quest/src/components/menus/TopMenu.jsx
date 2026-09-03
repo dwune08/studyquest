@@ -1,11 +1,11 @@
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 
-const TopMenu = ({ 
-  userName = "김철수", 
-  userLevel = 31, 
-  currentExp = 450, 
-  maxExp = 1000,
-  onLogout 
+const TopMenu = ({  
+  userName = "학생",  
+  userLevel = 1,  
+  currentExp = 0,  
+  maxExp = 100, 
+  onLogout  
 }) => {
   const { goLogin } = useCustomNavigate();
   const expPercentage = Math.min((currentExp / maxExp) * 100, 100);
