@@ -1,10 +1,11 @@
 package com.studyquest.domain.rank.service;
 
+import com.studyquest.domain.rank.repository.RankRepository;
 import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import com.studyquest.domain.rank.dto.RankDTO;
-import com.studyquest.domain.rank.repository.RankRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class RankServiceImpl implements RankService {
 
     private final RankRepository rankRepository;
@@ -30,7 +32,7 @@ public class RankServiceImpl implements RankService {
             Integer myRank = rankRepository.findMyRank(loginStudentNo);
 
             if (myRank != null && myRank > 0) {
-                targetPage = (int) Math.ceil((double) myRank / pageRequestDTO.getSize());
+                targetPage = (myRank - 1) / pageRequestDTO.getSize() + 1;
             }
         }
 

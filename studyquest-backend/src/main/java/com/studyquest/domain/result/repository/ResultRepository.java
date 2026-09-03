@@ -51,4 +51,26 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
     List<Result> findResultsByTeacherNo(@Param("teacherNo") Long teacherNo);
 
     List<Result> findTop5ByStudent_StudentNoOrderByResultDateDesc(Long studentNo);
+
+
+    // 이하 선생님 통계용 메서드들
+
+    // 1. 전체 학생 수 (중복 제거)
+    @Query("SELECT COUNT(DISTINCT r.student.studentNo) FROM Result r")
+    long countTotalStudents();
+
+    // 2. 전체 평균 점수 계산을 위한 모든 결과 조회 (또는 직접 평균 쿼리)
+    // 여기서는 정답 여부(isCorrect)가 True면 100점, False면 0점으로 가정하거나 정답률 기반으로 계산
+    @Query("SELECT r FROM Result r JOIN FETCH r.quiz q JOIN FETCH r.student s")
+    List<Result> findAllWithQuizAndStudent();
+
+    // 3. 문항별 정답자 수 및 전체 응시자 수 통계 조회
+    // Object[] 형태 -> [quizNo, quizTitle, quizType, correctCount(isCorrect=true), totalCount]
+    @Query("SELECT q.quizNo, q.quizTitle, q.quizType, " +
+            "SUM(CASE WHEN r.isCorrect = true THEN 1 ELSE 0 END), " +
+            "COUNT(r) " +
+            "FROM Result r JOIN r.quiz q " +
+            "GROUP BY q.quizNo, q.quizTitle, q.quizType " +
+            "ORDER BY q.quizNo ASC")
+    List<Object[]> getQuizStatisticsData();
 }
