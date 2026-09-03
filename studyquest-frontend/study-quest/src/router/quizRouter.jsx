@@ -36,15 +36,6 @@ const quizRouter = () => {
         return { Component };
       },
     },
-    // 퀴즈 수정 페이지 (/quizzes/:no/edit)
-    {
-      path: ":no/edit",
-      HydrateFallback: () => <div>Loading...</div>,
-      lazy: async () => {
-        const { default: Component } = await import("../pages/quiz/QuizEditPage");
-        return { Component };
-      },
-    },
   ];
 };
 
