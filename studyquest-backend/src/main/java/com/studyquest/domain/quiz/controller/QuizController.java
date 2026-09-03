@@ -49,6 +49,7 @@ public class QuizController {
             log.warn(" SecurityContext에 UserDTO가 존재하지 않습니다.");
         }
 
+
         PageResponseDTO<QuizDTO> response = quizService.getQuizList(pageRequestDTO, quizType, teacherNo, studentNo);
         return ResponseEntity.ok(response);
     }
