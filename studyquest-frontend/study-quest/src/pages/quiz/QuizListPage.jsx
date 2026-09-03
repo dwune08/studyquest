@@ -5,7 +5,7 @@ import BasicLayout from "../../layouts/BasicLayout";
 
 const CATEGORIES = [
   { id: 0, name: "5지선다 퀴즈", desc: "객관식 문제를 풀고 포인트를 획득하세요", icon: "📝" },
-  { id: 1, name: "빈칸채우기 퀴즈", desc: "알맞은 단어를 채워넣는 퀴즈입니다", icon: "✏️" },
+  { id: 1, name: "단답형 퀴즈", desc: "알맞은 답을 채워넣는 퀴즈입니다", icon: "✏️" },
   { id: 2, name: "O/X 퀴즈", desc: "참과 거짓을 빠르게 판단하세요", icon: "⭕" },
 ];
 
@@ -199,7 +199,7 @@ const QuizListPage = () => {
                       ))
                     ) : (
                       <div className="py-16 text-center text-xs sm:text-sm text-slate-500">
-                        등록된 {getCategoryTitle(selectedType)}가 없습니다.
+                        등록된 {getCategoryTitle(selectedType)}를 모두 풀었습니다.
                       </div>
                     )}
 

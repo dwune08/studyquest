@@ -1,9 +1,11 @@
 package com.studyquest.domain.result.controller;
 
+import com.studyquest.domain.result.dto.ResultRequestDTO;
 import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import com.studyquest.domain.result.dto.ResultDTO;
 import com.studyquest.domain.result.service.ResultService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,5 +53,21 @@ public class ResultController {
     ) {
         PageResponseDTO<ResultDTO> response = resultService.getResultsByQuiz(quizNo, pageRequestDTO);
         return ResponseEntity.ok(response);
+    }
+
+    // 퀴즈 답안 제출 및 채점 (학생 전용)
+    // 요청 예시: POST /results
+    @PostMapping
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ResultDTO> submitResult(
+            @Valid @RequestBody ResultRequestDTO requestDTO
+    ) {
+        // DTO 내부의 studentNo, quizNo, resultAnswer를 전달받아 처리
+        ResultDTO resultDTO = resultService.saveResult(
+                requestDTO.getStudentNo(),
+                requestDTO.getQuizNo(),
+                requestDTO.getResultAnswer()
+        );
+        return ResponseEntity.ok(resultDTO);
     }
 }

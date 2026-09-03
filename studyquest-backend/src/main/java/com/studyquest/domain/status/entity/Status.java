@@ -75,4 +75,19 @@ public class Status {
             statusSpeed += 2;
         }
     }
+
+    // Status.java 클래스 내부 추가
+    public void increaseStatsByQuizType(Integer quizType) {
+        // 1. 정답 시 경험치 +10 (내부에서 레벨업 자동 체크됨)
+        addExp(10);
+
+        // 2. 문제 유형별 능력치 +1
+        if (quizType == null) return;
+
+        switch (quizType) {
+            case 0 -> addAttack(1);  // 5지선다형 (객관식) -> 공격력 +1
+            case 1 -> addWisdom(1);  // 단답형 (주관식) -> 지혜 +1
+            case 2 -> addSpeed(1);   // O/X 퀴즈 -> 스피드 +1
+        }
+    }
 }
