@@ -120,11 +120,11 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                     .map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
                     .collect(Collectors.toList());
 
-            // 💡 2. Authentication 생성 시 직접 변환한 authorities 전달
+            // 💡 2. Authentication 생성 시 반드시 위에서 만든 authorities를 3번째 인자로 전달해야 합니다!
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDTO,
                     null,
-                    authorities
+                    authorities // <-- 이 부분이 빠졌거나 다른 리스트가 들어갔는지 확인!
             );
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();

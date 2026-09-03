@@ -1,10 +1,14 @@
 package com.studyquest.domain.quiz.entity;
 
+import com.studyquest.domain.result.entity.Result;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "QUIZ")
@@ -61,4 +65,8 @@ public class Quiz {
     // 선택지 연관관계 (Quiz 삭제 시 Choices 자동 삭제)
     @OneToOne(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private Choices choices;
+
+    // Quiz.java 내부에 추가
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Result> results = new ArrayList<>();
 }
