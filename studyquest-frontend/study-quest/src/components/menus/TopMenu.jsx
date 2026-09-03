@@ -8,7 +8,7 @@ const TopMenu = ({
   userLevel = 1,
   currentExp = 0,
   maxExp = 100,
-  subInfo = "3학년 담당",
+  subInfo = "1학년 담당 선생님",
   onLogout,
 
   
