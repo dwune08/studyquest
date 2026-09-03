@@ -51,6 +51,10 @@ const BasicLayout = ({
       userInfo?.role ??
       (reduxUser.userType === 2 ? "teacher" : "student"),
 
+    userNo:
+      userInfo?.userNo ??
+      reduxUser.userNo,
+
     userType:
       userInfo?.userType ??
       reduxUser.userType,
@@ -58,6 +62,10 @@ const BasicLayout = ({
     userName:
       userInfo?.userName ??
       reduxUser.userName,
+
+    teacherGrade:
+      userInfo?.teacherGrade ??
+      reduxUser.teacherGrade,
 
     userLevel:
       userInfo?.userLevel ??
@@ -75,10 +83,13 @@ const BasicLayout = ({
       100,
   };
 
+  console.log("선생님 학년 확인:", {
+  userInfoTeacherGrade: userInfo?.teacherGrade,
+  reduxTeacherGrade: reduxUser.teacherGrade,
+  finalTeacherGrade: finalUserInfo.teacherGrade,
+});
+
   const handleAttendance = (e) => {
-    if (onAttendanceClick) {
-      onAttendanceClick(e);
-    }
     if (onAttendanceClick) {
       onAttendanceClick(e);
     }

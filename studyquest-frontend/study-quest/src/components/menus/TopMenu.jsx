@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
+import jwtAxios from "../../api/jwtAxios";
 
 const TopMenu = ({
   role = "student",
   userType,
+  userNo,
   userName = "사용자",
   userLevel = 1,
   currentExp = 0,
@@ -34,19 +36,19 @@ const TopMenu = ({
 
   // 선생님인 경우에만 localStorage에서 정보 가져오기
   useEffect(() => {
-    if (!isTeacher) return;
+    if (!isTeacher || !userNo) return;
 
-    const savedUserInfo = localStorage.getItem("userInfo");
-
-    if (savedUserInfo) {
+    const loadTeacherInfo = async () => {
       try {
-        const parsedUserInfo = JSON.parse(savedUserInfo);
-        setTeacherInfo(parsedUserInfo);
+        const res = await jwtAxios.get(`/users/${userNo}`);
+        setTeacherInfo(res.data);
       } catch (error) {
         console.error("선생님 정보 불러오기 실패:", error);
       }
-    }
-  }, [isTeacher]);
+    };
+
+    loadTeacherInfo();
+  }, [isTeacher, userNo]);
 
   const handleLogout = (e) => {
     if (onLogout) {
