@@ -12,6 +12,7 @@ const BasicLayout = ({
   onQuizDungeonClick,
   onLogout,
   userType,
+  showFooter = true
 }) => {
   const { goEvent, goQuizList } = useCustomNavigate();
 
@@ -50,6 +51,10 @@ const BasicLayout = ({
       userInfo?.role ??
       (reduxUser.userType === 2 ? "teacher" : "student"),
 
+    userNo:
+      userInfo?.userNo ??
+      reduxUser.userNo,
+
     userType:
       userInfo?.userType ??
       reduxUser.userType,
@@ -57,6 +62,10 @@ const BasicLayout = ({
     userName:
       userInfo?.userName ??
       reduxUser.userName,
+
+    teacherGrade:
+      userInfo?.teacherGrade ??
+      reduxUser.teacherGrade,
 
     userLevel:
       userInfo?.userLevel ??
@@ -74,6 +83,12 @@ const BasicLayout = ({
       100,
   };
 
+  console.log("선생님 학년 확인:", {
+  userInfoTeacherGrade: userInfo?.teacherGrade,
+  reduxTeacherGrade: reduxUser.teacherGrade,
+  finalTeacherGrade: finalUserInfo.teacherGrade,
+});
+
   const handleAttendance = (e) => {
     if (onAttendanceClick) {
       onAttendanceClick(e);
@@ -82,6 +97,9 @@ const BasicLayout = ({
   };
 
   const handleQuizDungeon = (e) => {
+    if (onQuizDungeonClick) {
+      onQuizDungeonClick(e);
+    }
     if (onQuizDungeonClick) {
       onQuizDungeonClick(e);
     }
@@ -101,13 +119,15 @@ const BasicLayout = ({
           {children}
         </main>
 
-        <nav className="shrink-0 w-full">
-          <FooterMenu
-            userType={finalUserType}
-            onAttendanceClick={handleAttendance}
-            onQuizDungeonClick={handleQuizDungeon}
-          />
-        </nav>
+        {showFooter && (
+          <nav className="shrink-0 w-full">
+            <FooterMenu
+              userType={finalUserType}
+              onAttendanceClick={handleAttendance}
+              onQuizDungeonClick={handleQuizDungeon}
+            />
+          </nav>
+        )}
       </div>
     </div>
   );

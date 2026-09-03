@@ -70,6 +70,7 @@ const LoginPage = () => {
           teacherGrade: teacherGrade || null
         };
 
+
         // 5. 🔴 핵심: Redux 스토어에 유저 정보 디스패치!
         dispatch(login(userInfo));
 
