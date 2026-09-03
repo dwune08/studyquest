@@ -103,12 +103,6 @@ const BasicLayout = ({
         onLogout={onLogout}
       />
 
-      <TopMenu
-        {...finalUserInfo}
-        userType={finalUserType}
-        onLogout={onLogout}
-      />
-
       <div className="flex-1 flex flex-col justify-between overflow-hidden">
         <main className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
           {children}
