@@ -12,7 +12,6 @@ const BasicLayout = ({
   onQuizDungeonClick,
   onLogout,
   userType,
-  showFooter = true
 }) => {
   const { goEvent, goQuizList } = useCustomNavigate();
 
@@ -119,15 +118,12 @@ const BasicLayout = ({
           {children}
         </main>
 
-        {showFooter && (
-          <nav className="shrink-0 w-full">
-            <FooterMenu
-              userType={finalUserType}
-              onAttendanceClick={handleAttendance}
-              onQuizDungeonClick={handleQuizDungeon}
-            />
-          </nav>
-        )}
+        <nav className="shrink-0 w-full">
+          <FooterMenu
+            userType={userInfo?.userType}
+            onAttendanceClick={handleAttendance}
+            onQuizDungeonClick={handleQuizDungeon}/>
+        </nav>
       </div>
     </div>
   );
