@@ -1,3 +1,4 @@
+// FooterMenu.jsx
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 
 const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick, userType }) => {
@@ -19,7 +20,7 @@ const FooterMenu = ({ onAttendanceClick, onQuizDungeonClick, userType }) => {
     goQuizList();
   };
 
-  // 선생님용 푸터
+  // ★ 선생님용 푸터 (기존 선생님 페이지에서는 정상 노출)
   if (userType === 2) {
     return (
       <footer className="w-full bg-slate-900/90 border-t border-slate-800/80 px-8 py-4 flex justify-end gap-6 relative z-10 shrink-0">
