@@ -195,10 +195,6 @@ const StudentMyPage = () => {
                     <p className="text-xs font-semibold text-blue-400">MY STATUS</p>
                     <h3 className="text-base sm:text-lg font-extrabold text-slate-100">나의 능력치</h3>
                   </div>
-
-                  <div className="rounded-xl border border-blue-500/30 bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-300">
-                    Lv.{currentStatus.statusLevel}
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 sm:gap-4">
@@ -208,7 +204,7 @@ const StudentMyPage = () => {
                     <p className="mt-0.5 text-xl sm:text-2xl font-black text-blue-400">
                       {currentStatus.statusAttack}
                     </p>
-                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">5지선다</p>
+                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">5지선다 퀴즈</p>
                   </div>
 
                   <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-3 sm:p-4 transition-all hover:border-purple-500/50">
@@ -217,7 +213,7 @@ const StudentMyPage = () => {
                     <p className="mt-0.5 text-xl sm:text-2xl font-black text-purple-400">
                       {currentStatus.statusWisdom}
                     </p>
-                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">빈칸 채우기</p>
+                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">단답형 퀴즈</p>
                   </div>
 
                   <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-3 sm:p-4 transition-all hover:border-cyan-500/50">
