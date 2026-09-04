@@ -357,7 +357,7 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 
 <p align="center">
   <a href="./docs/erd.png">
-    <img src="./docs/erd.png" width="100%">
+    <img src="./studyquest-backend/docs/erd.png" width="100%">
   </a>
 </p>
 
