@@ -533,8 +533,6 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 | **[김성민]**    | 퀴즈 / 선생님 기능 |
 | **[장호영]**    | 랭킹 / 이벤트 / 퀴즈 결과 |
 
-> ※ 실제 팀원 이름과 담당 기능에 맞게 수정
-
 ---
 
 # 🔧 Troubleshooting
@@ -544,17 +542,68 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 ## 1. 
 
 ### 문제 상황
-
+랭킹 페이지 최초 진입 시 표시 오류
+- 랭킹 페이지에 처음 진입했을 때, 로그인한 사용자의 실제 순위가 포함된 페이지(예: 5페이지) 대신 엉뚱한 페이지(1페이지 또는 잘못 매핑된 6페이지)가 표시됨.
 
 
 ### 원인
+- 오류 원인 :
+프론트엔드와 백엔드 간 최초 진입(Initial Request)을 판별하는 기준의 부재 (DTO의 기본값으로 인해 page 값이 0이나 null이 아닌 1로 바인딩됨).
+컨트롤러에서 @GetMapping("/ranks")와 클래스 레벨의 @RequestMapping("/ranks")가 중첩되어 잘못된 URL(/ranks/ranks)이 생성되면서 시큐리티 예외 발생.
+백엔드 서비스 계층에서 유저의 실제 순위(myRank)를 기반으로 targetPage를 계산하는 로직이 있었으나, 진입 조건 플래그(isInitialRequest)가 올바르게 전달되지 않아 우회됨.
 
 
 ### 문제 해결 과정
+단계별 조치 방법:
+- Step 1: 프론트엔드에서 최초 진입 시 page 파라미터를 아예 보내지 않거나 명시적으로 제어할 수 있도록 구조 수정.
+- Step 2: 백엔드 컨트롤러에서 @RequestParam(value = "page", required = false)를 사용하여 page 파라미터의 유무로 최초 진입(isInitialRequest = true) 여부를 명확하게 판별.
+- Step 3: 서비스 계층에서 최초 진입 시 로그인된 유저의 실제 순위를 DB에서 조회하여 알맞은 페이지 번호를 동적으로 계산((myRank - 1) / size + 1)한 뒤 리턴.
 
 
 ### 배운 점
+프론트엔드의 상태 관리와 백엔드의 파라미터 바인딩 타이밍을 일치시키는 것이 동적 페이지네이션 구현의 핵심이며, 문제가 발생했을 때 컨트롤러 진입 지점에 상세 로그를 찍어 파라미터의 유입 상태를 확인하는 것이 디버깅의 지름길이다.
 
+-----
+
+## 2.
+
+### 문제 상황
+퀴즈 등록 시 5지선다형이 아닌 O/X 퀴즈나 단답형 퀴즈를 등록할 때 서버 에러 발생.
+
+
+### 원인
+- 프론트엔드에서 O/X 및 단답형 퀴즈 등록 시 사용되지 않는 choice1, choice2 필드에 null을 전달했으나, 데이터베이스의 CHOICES 테이블 내 CHOICE1, CHOICE2 컬럼에 NOT NULL 제약조건이 걸려 있어 무결성 위반 에러가 발생함.
+- Choices 엔티티와 테이블 설계상 선택지 1번과 2번은 필수 값(NOT NULL)으로 지정되어 있어, 5지선다형 외의 퀴즈 타입에서 빈 값을 그대로 넘기면 데이터베이스에 저장할 수 없음.
+- 프론트엔드의 기존 정답 입력 구조(숫자형)와 폼 데이터 전송 방식을 유지하기 위해, 데이터베이스 제약조건을 우회하거나 백엔드에서 데이터 가공 처리가 필요함.
+
+### 문제 해결 과정
+- 백엔드 서비스 레이어(QuizServiceImpl.createQuiz)에서 퀴즈 타입(quizType)이 5지선다형(0)이 아닐 경우, choice1과 choice2에 기본 더미 값("-")을 할당하여 데이터베이스의 NOT NULL 제약조건을 충족하도록 수정.
+
+- 이하 예시 코드
+
+// QuizServiceImpl.java 수정 적용
+String c1 = quizDTO.getChoice1();
+String c2 = quizDTO.getChoice2();
+
+if (quizDTO.getQuizType() != 0) {
+c1 = "-";
+c2 = "-";
+}
+
+Choices choices = Choices.builder()
+.quiz(savedQuiz)
+.choice1(c1)
+.choice2(c2)
+.choice3(quizDTO.getChoice3())
+.choice4(quizDTO.getChoice4())
+.choice5(quizDTO.getChoice5())
+.build();
+
+choicesRepository.save(choices);
+
+
+### 배운 점
+- 설계 단계에서 DB의 제약조건을 꼼꼼히 확인해야 이후 예기치 못한 오류가 발생하는 것을 막을 수 있다. 
 ----
 
 [김성민]
