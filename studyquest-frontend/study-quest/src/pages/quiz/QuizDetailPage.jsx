@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
 import { useAuth } from "../../hooks/useAuth";
@@ -10,12 +11,38 @@ const QuizDetailPage = () => {
   const { goQuizList, goQuizResult, goLogin } = useCustomNavigate();
   const { user, studentNo, currentNo } = useAuth();
 
+  // Redux 로그인 상태 가져오기
+  const loginUser = useSelector((state) => state.loginSlice);
+
   const [quiz, setQuiz] = useState(null);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 1. 퀴즈 상세 데이터 조회
+  // 헤더 및 사용자 최신 상태 관리
+  const [userStatus, setUserStatus] = useState(null);
+
+  // 1. 유저 최신 데이터(EXP, Level 등) 조회 (헤더 표시용)
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await jwtAxios.get("/mypage/me");
+        if (res.data?.status) {
+          setUserStatus(res.data.status);
+        }
+      } catch (err) {
+        console.error("유저 데이터 조회 실패:", err);
+        const storedUserInfo = localStorage.getItem("userInfo");
+        if (storedUserInfo) {
+          setUserStatus(JSON.parse(storedUserInfo));
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // 2. 퀴즈 상세 데이터 조회
   useEffect(() => {
     if (!quizNo) return;
 
@@ -33,7 +60,7 @@ const QuizDetailPage = () => {
       } catch (err) {
         console.error("퀴즈 로딩 실패:", err);
         setError(err.response?.data?.message || "퀴즈를 불러오지 못했습니다.");
-      } finally { // 👈 36번째 줄 오타(font-medium -> finally) 수정
+      } finally {
         setLoading(false);
       }
     };
@@ -41,14 +68,14 @@ const QuizDetailPage = () => {
     fetchQuizDetail();
   }, [quizNo]);
 
-  // 2. 답안 제출 처리
+  // 3. 답안 제출 처리
   const handleSubmit = async () => {
     if (answer === "" || answer === null || answer === undefined) {
       alert("답을 선택하거나 입력해 주세요.");
       return;
     }
 
-    const targetStudentNo = studentNo || currentNo || user?.userNo;
+    const targetStudentNo = studentNo || currentNo || user?.userNo || loginUser?.userNo;
 
     if (!targetStudentNo) {
       alert("학생 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
@@ -82,16 +109,18 @@ const QuizDetailPage = () => {
 
   const handleLogout = () => {
     localStorage.clear();
+    sessionStorage.clear();
     goLogin();
   };
 
+  // 상단 헤더(BasicLayout) 전달용 유저 정보 객체 정제
   const topMenuUserInfo = {
     role: "student",
     userType: 1,
-    userName: user?.userName || user?.name || "모험가",
-    userLevel: user?.userLevel || user?.level || 1,
-    currentExp: user?.currentExp || user?.exp || 0,
-    maxExp: user?.maxExp || 100,
+    userName: userStatus?.studentName || loginUser?.userName || user?.userName || user?.name || "모험가",
+    userLevel: userStatus?.statusLevel ?? loginUser?.userLevel ?? user?.userLevel ?? 1,
+    currentExp: userStatus?.statusExp ?? loginUser?.currentExp ?? user?.currentExp ?? 0,
+    maxExp: userStatus?.nextLevelExp ?? loginUser?.maxExp ?? user?.maxExp ?? 100,
   };
 
   if (loading) {

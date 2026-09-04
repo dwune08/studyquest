@@ -1,25 +1,51 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import jwtAxios from "../../api/jwtAxios";
 import { useCustomNavigate } from "../../hooks/useCustomNavigate";
-import { useAuth } from "../../hooks/useAuth";
 import BasicLayout from "../../layouts/BasicLayout";
 
 const QuizResultPage = () => {
   const { goStudentMyPage, goQuizList, goLogin } = useCustomNavigate();
-  const { user } = useAuth();
   const location = useLocation();
 
+  // Redux 로그인 상태 가져오기
+  const loginUser = useSelector((state) => state.loginSlice);
+
+  // 헤더 및 사용자 상태 관리
+  const [userStatus, setUserStatus] = useState(null);
+
   // 1. 새로고침 시 location.state 유실 방지를 위한 SessionStorage 백업 처리
-  const [resultInfo, setResultInfo] = useState(() => {
+  const [resultInfo] = useState(() => {
     if (location.state?.quiz && location.state?.resultData) {
-      // 전달받은 데이터가 있으면 저장
       sessionStorage.setItem("last_quiz_result", JSON.stringify(location.state));
       return location.state;
     }
-    // 새로고침 시 저장소에서 다시 복구
     const saved = sessionStorage.getItem("last_quiz_result");
     return saved ? JSON.parse(saved) : null;
   });
+
+  // 유저 최신 데이터(EXP, Level 등) 조회
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await jwtAxios.get("/mypage/me");
+        if (res.data?.status) {
+          setUserStatus(res.data.status);
+        }
+      } catch (error) {
+        console.error("결과 페이지 유저 데이터 조회 실패:", error);
+        // 실패 시 localStorage 데이터로 Fallback
+        const storedUserInfo = localStorage.getItem("userInfo");
+        if (storedUserInfo) {
+          const parsed = JSON.parse(storedUserInfo);
+          setUserStatus(parsed);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -27,13 +53,14 @@ const QuizResultPage = () => {
     goLogin();
   };
 
+  // 상단 헤더(BasicLayout) 전달용 유저 정보 객체 정제
   const topMenuUserInfo = {
     role: "student",
     userType: 1,
-    userName: user?.userName || user?.name || "모험가",
-    userLevel: Number(user?.userLevel || user?.level || 1),
-    currentExp: Number(user?.currentExp || user?.exp || 0),
-    maxExp: Number(user?.maxExp || 100),
+    userName: userStatus?.studentName || loginUser?.userName || "모험가",
+    userLevel: userStatus?.statusLevel ?? loginUser?.userLevel ?? 1,
+    currentExp: userStatus?.statusExp ?? loginUser?.currentExp ?? 0,
+    maxExp: userStatus?.nextLevelExp ?? loginUser?.maxExp ?? 100,
   };
 
   // 데이터가 아예 없는 예외 케이스
@@ -117,7 +144,6 @@ const QuizResultPage = () => {
 
   return (
     <BasicLayout userType="student" userInfo={topMenuUserInfo} onLogout={handleLogout}>
-      {/* 텍스트 및 전체 레이아웃 폰트 고정용 컨테이너 */}
       <div className="w-full max-w-5xl mx-auto px-5 py-6 text-white flex items-center justify-center min-h-[calc(100vh-140px)] box-border text-base">
         <div className="w-full max-w-xl rounded-3xl border border-slate-700/80 bg-[#0f1a2e]/90 p-8 sm:p-10 text-center shadow-[0_0_40px_rgba(37,99,235,0.15)] backdrop-blur-sm box-border">
           
@@ -161,7 +187,6 @@ const QuizResultPage = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-3 border-t border-slate-800/80 pt-4 sm:grid-cols-2">
-              {/* 제출한 답 */}
               <div className="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3.5 sm:p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   제출한 답
@@ -175,7 +200,6 @@ const QuizResultPage = () => {
                 </p>
               </div>
 
-              {/* 실제 정답 */}
               <div className="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3.5 sm:p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   정답
