@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 
-const ScoreStatistics = () => {
+export default function ScoreStatistics() {
   const [summary, setSummary] = useState({
     totalStudents: 0,
     averageScore: 0,
@@ -22,7 +22,7 @@ const ScoreStatistics = () => {
   const [distributionData, setDistributionData] = useState([]);
   const [quizStatistics, setQuizStatistics] = useState([]);
   const [scoreTrendData, setScoreTrendData] = useState([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,7 +33,9 @@ const ScoreStatistics = () => {
         const response = await jwtAxios.get("/teachers/statistics");
         const data = response.data;
 
-        setSummary(data.summary || { totalStudents: 0, averageScore: 0, maxScore: 0 });
+        setSummary(
+          data.summary || { totalStudents: 0, averageScore: 0, maxScore: 0 }
+        );
         setDistributionData(data.distribution || []);
         setQuizStatistics(data.quizzes || []);
         setScoreTrendData(data.trends || []);
@@ -62,7 +64,7 @@ const ScoreStatistics = () => {
 
   if (loading) {
     return (
-      <div className="flex h-full min-h-[400px] items-center justify-center text-cyan-400">
+      <div className="flex w-full min-h-[400px] items-center justify-center text-cyan-400">
         성적 통계 데이터를 불러오는 중입니다...
       </div>
     );
@@ -70,14 +72,32 @@ const ScoreStatistics = () => {
 
   if (error) {
     return (
-      <div className="flex h-full min-h-[400px] items-center justify-center text-rose-500">
+      <div className="flex w-full min-h-[400px] items-center justify-center text-rose-500">
         {error}
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="w-full space-y-6">
+      {/* [학생 관리] 이미지와 동일한 초슬림 다크 스크롤바 */}
+      <style>{`
+        ::-webkit-scrollbar {
+          width: 5px !important;
+          height: 5px !important;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent !important;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #1f293d !important;
+          border-radius: 9999px !important;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #3b82f6 !important;
+        }
+      `}</style>
+
       {/* 상단 제목 */}
       <div className="flex items-center justify-between border-b border-gray-800 pb-5">
         <div>
@@ -93,7 +113,7 @@ const ScoreStatistics = () => {
       </div>
 
       {/* 요약 카드 */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-blue-900/40 bg-[#080d19] p-5">
           <p className="text-xs text-gray-400">전체 학생</p>
           <p className="mt-2 text-2xl font-black text-cyan-400">
@@ -116,10 +136,10 @@ const ScoreStatistics = () => {
         </div>
       </div>
 
-      {/* 1. 학생 성적 분포 그래프 (Area 부드러운 흐름형태로 변경) */}
-      <section className="mt-6 rounded-xl border border-gray-800 bg-[#080d19] p-6">
+      {/* 1. 학생 성적 분포 그래프 */}
+      <section className="rounded-xl border border-gray-800 bg-[#080d19] p-6">
         <div className="mb-6">
-          <h3 className="font-bold">📈 학생 펑균 성적 분포</h3>
+          <h3 className="font-bold">📈 학생 평균 성적 분포</h3>
           <p className="mt-1 text-xs text-gray-500">
             점수 구간별 학생 수의 전체적인 밀도와 분포 흐름을 나타냅니다.
           </p>
@@ -138,58 +158,121 @@ const ScoreStatistics = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#253047" />
-              <XAxis dataKey="range" stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 12 }} />
-              <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 12 }} allowDecimals={false} />
-              <Tooltip contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "10px", color: "#ffffff" }} />
+              <XAxis
+                dataKey="range"
+                stroke="#94a3b8"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+              />
+              <YAxis
+                stroke="#94a3b8"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #334155",
+                  borderRadius: "10px",
+                  color: "#ffffff",
+                }}
+              />
               <Legend />
-              <Area type="monotone" dataKey="students" name="학생 수" stroke="#22d3ee" strokeWidth={3} fill="url(#studentCountArea)" activeDot={{ r: 7 }} />
+              <Area
+                type="monotone"
+                dataKey="students"
+                name="학생 수"
+                stroke="#22d3ee"
+                strokeWidth={3}
+                fill="url(#studentCountArea)"
+                activeDot={{ r: 7 }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </section>
 
-      {/* 2. 담당 학년 평균 성적 추이 그래프 (Bar 막대 형태로 변경) */}
-      <section className="mt-6 rounded-xl border border-gray-800 bg-[#080d19] p-6">
+      {/* 2. 담당 학년 평균 성적 추이 그래프 */}
+      <section className="rounded-xl border border-gray-800 bg-[#080d19] p-6">
         <div className="mb-6">
           <h3 className="font-bold">📈 퀴즈별 평균 점수</h3>
-          <p className="mt-1 text-xs text-gray-500">퀴즈별 담당 학년 전체 학생의 평균 점수 비교</p>
+          <p className="mt-1 text-xs text-gray-500">
+            퀴즈별 담당 학년 전체 학생의 평균 점수 비교
+          </p>
         </div>
 
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={scoreTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <BarChart
+              data={scoreTrendData}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#253047" />
-              <XAxis dataKey="quiz" stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 12 }} />
-              <YAxis domain={[0, 100]} stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 12 }} />
-              <Tooltip contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "10px", color: "#ffffff" }} />
+              <XAxis
+                dataKey="quiz"
+                stroke="#94a3b8"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+              />
+              <YAxis
+                domain={[0, 100]}
+                stroke="#94a3b8"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #334155",
+                  borderRadius: "10px",
+                  color: "#ffffff",
+                }}
+              />
               <Legend />
-              <Bar dataKey="averageScore" name="평균 점수" fill="#a855f7" radius={[6, 6, 0, 0]} barSize={40} />
+              <Bar
+                dataKey="averageScore"
+                name="평균 점수"
+                fill="#a855f7"
+                radius={[6, 6, 0, 0]}
+                barSize={40}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </section>
 
       {/* 문항별 정답률 */}
-      <section className="mt-6">
+      <section>
         <h3 className="mb-4 font-bold">📊 문항별 정답률</h3>
         <div className="space-y-4">
           {quizStatistics.map((quiz) => (
-            <div key={quiz.quizNo} className="rounded-xl border border-gray-800 bg-[#080d19] p-5">
+            <div
+              key={quiz.quizNo}
+              className="rounded-xl border border-gray-800 bg-[#080d19] p-5"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-cyan-400">QUIZ #{quiz.quizNo}</span>
+                  <span className="font-bold text-cyan-400">
+                    QUIZ #{quiz.quizNo}
+                  </span>
                   <span className="font-bold">{quiz.title}</span>
-                  <span className="rounded bg-[#1e293b] px-2 py-1 text-[10px] text-gray-400">{quiz.type}</span>
+                  <span className="rounded bg-[#1e293b] px-2 py-1 text-[10px] text-gray-400">
+                    {quiz.type}
+                  </span>
                 </div>
                 <div className="flex items-center gap-5 text-xs">
                   <span className="text-gray-400">
-                    정답자: <strong className="text-gray-200">{quiz.correct}</strong> / {quiz.total}명
+                    정답자:{" "}
+                    <strong className="text-gray-200">{quiz.correct}</strong> /{" "}
+                    {quiz.total}명
                   </span>
-                  <strong className={getTextColor(quiz.rate)}>{quiz.rate}%</strong>
+                  <strong className={getTextColor(quiz.rate)}>
+                    {quiz.rate}%
+                  </strong>
                 </div>
               </div>
               <div className="mt-4 h-2 overflow-hidden rounded-full border border-gray-700 bg-[#030711]">
-                <div className={`h-full rounded-full ${getBarColor(quiz.rate)}`} style={{ width: `${quiz.rate}%` }} />
+                <div
+                  className={`h-full rounded-full ${getBarColor(quiz.rate)}`}
+                  style={{ width: `${quiz.rate}%` }}
+                />
               </div>
             </div>
           ))}
@@ -197,6 +280,4 @@ const ScoreStatistics = () => {
       </section>
     </div>
   );
-};
-
-export default ScoreStatistics;
+}

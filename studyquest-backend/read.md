@@ -173,20 +173,22 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 ### 퀴즈 결과
 
 - 자신이 제출한 퀴즈 결과 조회
-- 퀴즈 제목 및 번호 확인
-- 점수 확인
-- 제출일 확인
+- 퀴즈 제목 및 정답 확인
+- 경험치와 문제 유형에 따른 능력치 획득
 
 ### 랭킹
 
 - 학생별 랭킹 조회
 - 경험치 및 레벨 기반 정보 확인
+- 자신의 데이터의 강조 처리
+- 페이지네이션으로 인한 다른 데이터 조회
 
-### 이벤트
+### 출석
 
 - 출석 이벤트
-- 이벤트 참여
 - 출석에 따른 보상
+- 주간 출석 달성도 조회
+- 1주일 연속 출석에 대한 추가 경험치 보상 획득
 
 ---
 
@@ -195,8 +197,7 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 ### 퀴즈 등록
 
 - 퀴즈 등록
-- 퀴즈 유형 선택
-- 객관식 / 주관식 / O/X 문제 등록
+- 퀴즈 유형 선택 (5지선다, 단답형, O/X)
 - 정답 및 선택지 관리
 
 ### 퀴즈 관리
@@ -208,7 +209,7 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 
 - 특정 퀴즈의 학생 제출 결과 조회
 - 제출 인원 확인
-- 학생별 결과 확인
+- 그래프를 통한 성적, 점수, 정답률 조회
 
 ### 담당 학년
 
@@ -219,104 +220,312 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 
 # 📝 퀴즈 유형
 
-| 유형 | 설명 |
-|---|---|
-| 객관식 | 여러 선택지 중 정답 선택 |
-| 주관식 | 정답을 직접 입력 |
-| O/X | O 또는 X 선택 |
+| 유형   | 설명              |
+|------|-----------------|
+| 5지선다 | 5가지 선택지 중 정답 선택 |
+| 단답형  | 정답을 직접 입력       |
+| O/X  | O 또는 X 선택       |
 
 ---
 
-# 📊 퀴즈 결과 API
+# 📡 API
 
-| Method | URI | 설명 |
-|---|---|---|
-| POST | `/results` | 학생의 퀴즈 답안 제출 및 결과 저장 |
-| GET | `/results?studentNo={studentNo}` | 특정 학생의 전체 퀴즈 결과 조회 |
-| GET | `/results?quizNo={quizNo}` | 특정 퀴즈의 학생 결과 조회 |
-| GET | `/results/{resultNo}` | 특정 퀴즈 결과 조회 |
+StudyQuest에서 제공하는 REST API 명세입니다.
 
-### 학생 결과
-
-- 퀴즈 번호
-- 퀴즈 제목
-- 점수
-- 제출일
-
-### 선생님 결과
-
-- 퀴즈 번호
-- 퀴즈 제목
-- 제출 인원
-- 학생 결과 관리
+> **Base URL**: `/`
 
 ---
 
-# 🗄️ ERD
+## 👤 User
 
-> 프로젝트 최종 ERD 이미지를 추가해주세요.
+회원가입, 로그인, 회원 정보 및 마이페이지를 관리합니다.
 
-![ERD](./images/erd.png)
+|  Method  | Endpoint                      | 권한           | 설명                |
+| :------: | ----------------------------- | ------------ | ----------------- |
+|  `POST`  | `/users`                      | `Permit All` | 회원가입              |
+|  `POST`  | `/users/login`                | `Permit All` | 로그인               |
+|  `POST`  | `/users/refresh`              | `Permit All` | Access Token 재발급  |
+|   `GET`  | `/users/{userNo}`             | `본인`         | 내 정보 조회           |
+|  `PATCH` | `/users/{userNo}`             | `본인`         | 회원 정보 수정          |
+| `DELETE` | `/users/{userNo}`             | `본인`         | 회원 탈퇴             |
+|   `GET`  | `/students/{studentNo}`       | `인증 필요`      | 학생 정보 단건 조회       |
+|   `GET`  | `/mypage/me`                  | `인증 필요`      | 로그인한 본인의 마이페이지 조회 |
+|   `GET`  | `/mypage/student/{studentNo}` | `인증 필요`      | 특정 학생의 마이페이지 조회   |
+
+---
+
+## 📝 Quiz
+
+선생님이 퀴즈를 등록·수정·삭제하고, 학생이 퀴즈를 조회할 수 있습니다.
+
+|  Method  | Endpoint            | 권한             | 설명             |
+| :------: | ------------------- | -------------- | -------------- |
+|  `POST`  | `/quizzes`          | `ROLE_TEACHER` | 퀴즈 등록          |
+|   `GET`  | `/quizzes`          | `인증 필요`        | 퀴즈 목록 조회 및 필터링 |
+|   `GET`  | `/quizzes/{quizNo}` | `인증 필요`        | 퀴즈 상세 조회       |
+|  `PATCH` | `/quizzes/{quizNo}` | `ROLE_TEACHER` | 퀴즈 수정          |
+| `DELETE` | `/quizzes/{quizNo}` | `ROLE_TEACHER` | 퀴즈 삭제          |
+
+---
+
+## 📊 Result
+
+학생의 퀴즈 답안 제출 및 채점 결과를 관리하고, 선생님에게 학생별 퀴즈 결과를 제공합니다.
+
+### 👨‍🎓 학생
+
+학생은 자신의 퀴즈 제출 및 결과를 조회할 수 있습니다.
+
+**제공 정보**
+
+* 퀴즈 번호
+* 퀴즈 제목
+* 점수
+* 제출일
+
+| Method | Endpoint           | 권한             | 설명                 |
+| :----: | ------------------ | -------------- | ------------------ |
+| `POST` | `/results`         | `ROLE_STUDENT` | 퀴즈 답안 제출 및 채점      |
+|  `GET` | `/results/me`      | `ROLE_STUDENT` | 본인의 전체 퀴즈 제출 이력 조회 |
+|  `GET` | `/results/me/quiz` | `ROLE_STUDENT` | 본인의 특정 퀴즈 제출 결과 조회 |
+
+### 👨‍🏫 선생님
+
+선생님은 특정 퀴즈에 제출된 학생들의 결과를 조회할 수 있습니다.
+
+**제공 정보**
+
+* 퀴즈 번호
+* 퀴즈 제목
+* 제출 인원
+* 학생별 결과
+
+| Method | Endpoint                 | 권한             | 설명                    |
+| :----: | ------------------------ | -------------- | --------------------- |
+|  `GET` | `/results/quiz/{quizNo}` | `ROLE_TEACHER` | 특정 퀴즈의 전체 학생 제출 결과 조회 |
+
+---
+
+## 👨‍🏫 Teacher
+
+선생님 페이지에서 담당 학생들의 학습 및 성적 현황을 확인합니다.
+
+| Method | Endpoint                    | 권한      | 설명                 |
+| :----: | --------------------------- | ------- | ------------------ |
+|  `GET` | `/teachers/statistics`      | `인증 필요` | 성적 통계 조회           |
+|  `GET` | `/teachers/student-results` | `인증 필요` | 담당 퀴즈의 학생 제출 현황 조회 |
+
+---
+
+## 🏆 Rank
+
+학생들의 랭킹 정보를 조회합니다.
+
+| Method | Endpoint | 권한      | 설명       |
+| :----: | -------- | ------- | -------- |
+|  `GET` | `/ranks` | `인증 필요` | 랭킹 목록 조회 |
+
+---
+
+## 📅 Event
+
+학생의 출석 정보를 관리합니다.
+
+| Method | Endpoint | 권한      | 설명           |
+| :----: | -------- | ------- | ------------ |
+|  `GET` | `/event` | `인증 필요` | 본인의 출석 정보 조회 |
+| `POST` | `/event` | `인증 필요` | 출석 체크        |
+
+---
+
+## 🔐 권한
+
+| 권한             | 설명                  |
+| -------------- | ------------------- |
+| `Permit All`   | 로그인하지 않은 사용자도 접근 가능 |
+| `인증 필요`        | 로그인한 사용자만 접근 가능     |
+| `본인`           | 본인의 데이터만 접근 가능      |
+| `ROLE_STUDENT` | 학생 권한 필요            |
+| `ROLE_TEACHER` | 선생님 권한 필요           |
+
+
+---
+
+## 🗄️ ERD
+
+### 전체 ERD
+
+<p align="center">
+  <a href="./docs/erd.png">
+    <img src="./docs/erd.png" width="100%">
+  </a>
+</p>
+
+### 주요 도메인
+
+<details>
+<summary>👤 User / Student / Teacher </summary>
+
+<img src="./docs/user.png" width="100%">
+<img src="./docs/student.png" width="100%">
+<img src="./docs/teacher.png" width="100%">
+
+</details>
+
+<details>
+<summary>📝 Quiz / Result / Option</summary>
+
+<img src="./docs/quiz.png" width="100%">
+<img src="./docs/result.png" width="100%">
+<img src="./docs/option.png" width="100%">
+
+</details>
+
+<details>
+<summary>📅 Attendance / Status</summary>
+
+<img src="./docs/attendance.png" width="100%">
+<img src="./docs/status.png" width="100%">
+
+</details>
 
 ---
 
 # 🖥️ 주요 화면
 
-## 🔐 로그인
+## 🏠 메인 페이지
 
-![로그인](./images/login.png)
+![메인페이지](./images/mainPage.png)
+
+
+
+## 🔐 로그인 및 회원가입
+
+<p align="center">
+  <img src="./images/join.png" width="48%" />
+  <img src="./images/login.png" width="48%" />
+</p>
 
 ---
 
 ## 👨‍🎓 학생 메인
 
-![학생 메인](./images/student-main.png)
+![학생 메인](./images/student.png)
 
 ---
 
-## 📝 퀴즈
+## 📝 퀴즈 메인
 
-![퀴즈](./images/quiz.png)
+![퀴즈 메인](./images/quizGo.png)
+
+---
+
+## 📝 퀴즈 목록
+
+<table align="center">
+  <tr>
+    <td width="33%" align="center">
+      <img src="./images/quiz-1.png" width="100%" alt="퀴즈 화면 1" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/quiz-2.png" width="100%" alt="퀴즈 화면 2" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/quiz-3.png" width="100%" alt="퀴즈 화면 3" />
+    </td>
+  </tr>
+</table>
+
+---
+
+## 📝 퀴즈 디테일 화면
+
+<table align="center">
+  <tr>
+    <td width="33%" align="center">
+      <img src="./images/quizDetail1.png" width="100%" alt="퀴즈 화면 1" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/quizDetail2.png" width="100%" alt="퀴즈 화면 2" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/quizDetail3.png" width="100%" alt="퀴즈 화면 3" />
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 📊 퀴즈 결과
 
-![퀴즈 결과](./images/result.png)
+<p align="center">
+  <img src="./images/quizGood.png" width="48%" />
+  <img src="./images/quizFail.png" width="48%" />
+</p>
 
 ---
 
 ## 🏆 랭킹
 
-![랭킹](./images/ranking.png)
+![랭킹](./images/rank.png)
 
 ---
 
-## 🎁 이벤트
+## 🎁 출석
 
-![이벤트](./images/event.png)
+<p align="center">
+  <img src="./images/event1.png" width="48%" />
+  <img src="./images/event2.png" width="48%" />
+</p>
 
 ---
 
 ## 👨‍🏫 선생님 페이지
 
-![선생님 페이지](./images/teacher.png)
+<table align="center">
+  <tr>
+    <td width="33%" align="center">
+      <img src="./images/teacher1.png" width="100%" alt="퀴즈 화면 1" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/teacher2.png" width="100%" alt="퀴즈 화면 2" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/teacher3.png" width="100%" alt="퀴즈 화면 3" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/teacher4.png" width="100%" alt="퀴즈 화면 3" />
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 📝 퀴즈 등록
 
-![퀴즈 등록](./images/quiz-register.png)
+<table align="center">
+  <tr>
+    <td width="33%" align="center">
+      <img src="./images/regist1.png" width="100%" alt="퀴즈 화면 1" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/regist2.png" width="100%" alt="퀴즈 화면 2" />
+    </td>
+    <td width="33%" align="center">
+      <img src="./images/regist3.png" width="100%" alt="퀴즈 화면 3" />
+    </td>
+  </tr>
+</table>
 
 ---
 
 # 👥 팀원 및 담당 기능
 
-| 팀원 | 담당 기능 |
-|---|---|
-| **[팀원 1]** | 회원 / 로그인 / 학생 기능 |
-| **[팀원 2]** | 퀴즈 / 선생님 기능 |
-| **[팀원 3]** | 랭킹 / 이벤트 / 퀴즈 결과 |
+| 팀원           | 담당 기능 |
+|--------------|---|
+| **[한진형/팀장]** | 회원 / 로그인 / 학생 기능 |
+| **[김성민]**    | 퀴즈 / 선생님 기능 |
+| **[장호영]**    | 랭킹 / 이벤트 / 퀴즈 결과 |
 
 > ※ 실제 팀원 이름과 담당 기능에 맞게 수정
 
@@ -324,141 +533,61 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 
 # 🔧 Troubleshooting
 
-## 1. localhost:8080 접속 시 `/login`으로 자동 이동되는 문제
+[한진형]
+
+## 1. 
 
 ### 문제 상황
 
-`localhost:8080/ranks`로 직접 접속했을 때 Controller에서 설정한 페이지가 정상적으로 출력되지 않고 `/login`으로 자동 이동하는 문제가 발생했습니다.
 
-HTTP 상태 코드 오류나 Controller의 매핑 오류가 발생한 것이 아니었기 때문에 요청 처리 과정의 앞단을 확인했습니다.
 
 ### 원인
 
-프로젝트의 `build.gradle`에 Spring Security 관련 의존성이 포함되어 있었습니다.
-
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
-
-프로젝트에서는 당시 Spring Security를 사용하지 않고 있었기 때문에 해당 의존성으로 인해 인증되지 않은 요청이 `/login`으로 이동하고 있었습니다.
 
 ### 문제 해결 과정
 
-    localhost:8080/ranks
-            ↓
-    Spring Security
-            ↓
-    인증 여부 확인
-            ↓
-    인증되지 않은 사용자
-            ↓
-    /login으로 리다이렉트
-
-프로젝트에서 Security를 사용하지 않는 상태였기 때문에 관련 의존성을 제거하여 문제를 해결했습니다.
 
 ### 배운 점
 
-Controller의 URI 매핑만 확인하는 것이 아니라 Filter, Security 등 Controller 이전 단계에서 요청을 가로채고 있는 요소도 함께 확인해야 한다는 것을 배웠습니다.
+----
 
----
+[김성민]
 
-## 2. 선생님 페이지 헤더의 담당 학년이 1학년으로 고정되는 문제
+## 1.
 
 ### 문제 상황
 
-DB에는 선생님의 담당 학년이 정상적으로 저장되어 있었지만, 선생님 페이지의 헤더에는 다음과 같이 기본값인 `1학년 담당 선생님`이 출력되는 문제가 발생했습니다.
 
-    1학년 담당 [김자바]
-
-Console에서 확인한 결과 담당 학년 데이터가 정상적으로 전달되지 않고 있었습니다.
-
-    선생님 학년 확인:
-    {
-        finalTeacherGrade: null,
-        reduxTeacherGrade: null,
-        userInfoTeacherGrade: undefined
-    }
 
 ### 원인
 
-로그인 API의 응답에는 다음과 같은 사용자 정보가 포함되어 있었습니다.
 
-    {
-        userNo: 23,
-        userEmail: "qqq@naver.com",
-        studentNo: null,
-        userType: 2,
-        userName: "김자바",
-        teacherNo: 8,
-        roleNames: ["TEACHER"],
-        accessToken: "...",
-        refreshToken: "..."
-    }
+### 문제 해결 과정
 
-하지만 `teacherGrade`가 포함되어 있지 않았습니다.
-
-기존 `TopMenu`에서는 사용자 정보에 `teacherGrade`가 존재하지 않을 경우 기본값을 출력하도록 되어 있었습니다.
-
-따라서 DB에 담당 학년이 정상적으로 저장되어 있더라도 Frontend까지 해당 데이터가 전달되지 않아 기본값인 `1학년 담당 선생님`이 출력되고 있었습니다.
-
-### 해결 방법
-
-Backend를 확인한 결과 기존 사용자 상세정보 API에서 `teacherGrade`를 이미 제공하고 있었습니다.
-
-    GET /users/{userNo}
-
-따라서 로그인 API를 불필요하게 수정하지 않고 `userNo`를 이용하여 기존 사용자 상세정보 API를 호출하도록 수정했습니다.
-
-### 수정 후 데이터 흐름
-
-    로그인
-      ↓
-    userNo = 23
-      ↓
-    BasicLayout
-      ↓
-    TopMenu에 userNo 전달
-      ↓
-    GET /users/23
-      ↓
-    UserService
-      ↓
-    Teacher 조회
-      ↓
-    teacher.getTeacherGrade()
-      ↓
-    teacherGrade = 3
-      ↓
-    UserResponseDTO
-      ↓
-    TopMenu
-      ↓
-    3학년 담당 [김자바]
 
 ### 배운 점
 
-DB에 데이터가 존재한다고 해서 Frontend에서 바로 사용할 수 있는 것은 아니며,
+-----
 
-    Database
-        ↓
-    Repository
-        ↓
-    Service
-        ↓
-    Controller
-        ↓
-    API Response
-        ↓
-    Axios
-        ↓
-    Redux / State
-        ↓
-    Props
-        ↓
-    React Component
-        ↓
-    화면
+[장호영]
 
-각 계층을 따라 데이터가 실제로 전달되고 있는지 확인해야 한다는 것을 배웠습니다.
+## 1.
+
+### 문제 상황
+
+
+
+### 원인
+
+
+### 문제 해결 과정
+
+
+### 배운 점
+
+
+
+
 
 ---
 
@@ -549,16 +678,20 @@ Study:Quest 프로젝트를 통해 Spring Boot와 React를 활용한 웹 서비�
 ## Backend
 
     cd studyquest-backend
-    ./gradlew bootRun
 
-Windows 환경에서는:
+Windows:
 
     cd studyquest-backend
     gradlew.bat bootRun
 
+MacOs / Linux:
+
+    gradlew bootRun
+
 ## Frontend
 
     cd studyquest-frontend
+
     npm install
     npm run dev
 
@@ -575,8 +708,8 @@ Windows 환경에서는:
 
 ### Study:Quest
 
-| 이름 | 역할 |
-|---|---|
-| [팀원 1] | Backend / Frontend |
-| [팀원 2] | Backend / Frontend |
-| [팀원 3] | Backend / Frontend |
+| 이름    | 역할 |
+|-------|---|
+| [한진형] | Backend / Frontend |
+| [김성민] | Backend / Frontend |
+| [장호영] | Backend / Frontend |

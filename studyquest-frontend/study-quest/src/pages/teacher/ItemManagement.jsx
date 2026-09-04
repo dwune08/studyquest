@@ -8,21 +8,18 @@ const typeName = (type) => {
 };
 
 const parseChoices = (quiz) => {
-  // 이미 choices 배열이 있다면 그대로 반환
   if (Array.isArray(quiz.choices)) return quiz.choices;
-  
-  // 백엔드 DTO 필드(choice1 ~ choice5)를 배열로 조립
+
   return [
     quiz.choice1 || "",
     quiz.choice2 || "",
     quiz.choice3 || "",
     quiz.choice4 || "",
-    quiz.choice5 || ""
+    quiz.choice5 || "",
   ];
 };
 
-const ItemManagement = () => {
-  // const { goQuizRegister, goHome } = useCustomNavigate(); // 필요시 주석 해제하여 사용
+export default function ItemManagement() {
   const [quizzes, setQuizzes] = useState([]);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,32 +29,29 @@ const ItemManagement = () => {
     try {
       setLoading(true);
       const response = await jwtAxios.get("/quizzes");
-      
+
       const data = response.data;
       let extractedList = [];
-      
-      // 기존 페이징 및 리스트 추출 로직 동일...
+
       if (Array.isArray(data)) {
         extractedList = data;
       } else if (data && Array.isArray(data.content)) {
-        extractedList = data.content; 
+        extractedList = data.content;
       } else if (data && Array.isArray(data.list)) {
-        extractedList = data.list;    
+        extractedList = data.list;
       } else if (data && Array.isArray(data.data)) {
-        extractedList = data.data;    
+        extractedList = data.data;
       } else if (data && typeof data === "object") {
-        const arrayField = Object.values(data).find(val => Array.isArray(val));
+        const arrayField = Object.values(data).find((val) => Array.isArray(val));
         extractedList = arrayField || [];
       }
 
-      // ★ 백엔드의 choice1~5를 choices 배열로 매핑
       const refinedList = extractedList.map((quiz) => ({
         ...quiz,
         choices: parseChoices(quiz),
       }));
 
       setQuizzes(refinedList);
-
     } catch (error) {
       console.error("퀴즈 목록을 불러오는 데 실패했습니다:", error);
       setQuizzes([]);
@@ -87,7 +81,7 @@ const ItemManagement = () => {
 
   const handleEdit = (quiz) => {
     let convertedAnswer = quiz.quizAnswer;
-    
+
     if (quiz.quizType === 2) {
       const val = String(quiz.quizAnswer).toUpperCase();
       if (val === "1") {
@@ -97,14 +91,13 @@ const ItemManagement = () => {
       }
     }
 
-    setEditingQuiz({ 
-      ...quiz, 
+    setEditingQuiz({
+      ...quiz,
       quizAnswer: convertedAnswer,
-      choices: parseChoices(quiz), // ★ 백엔드 필드들을 배열로 변환해서 모달에 전달
+      choices: parseChoices(quiz),
     });
   };
 
-  // 일반 입력 필드 변경 핸들러
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditingQuiz((prev) => ({
@@ -113,7 +106,6 @@ const ItemManagement = () => {
     }));
   };
 
-  // 5지선다 보기(choices) 개별 변경 핸들러
   const handleChoiceChange = (index, value) => {
     setEditingQuiz((prev) => {
       const newChoices = [...prev.choices];
@@ -123,55 +115,72 @@ const ItemManagement = () => {
   };
 
   // 3. 퀴즈 수정 저장 (API 연동)
-  // 3. 퀴즈 수정 저장 (API 연동)
-const handleEditSave = async () => {
-  try {
-    // OX 퀴즈(quizType === 2)일 때 "O" -> "1", "X" -> "2" 매핑
-    let formattedAnswer = editingQuiz.quizAnswer;
-    
-    if (Number(editingQuiz.quizType) === 2) {
-      if (editingQuiz.quizAnswer === "O" || editingQuiz.quizAnswer === "1") formattedAnswer = "1";
-      if (editingQuiz.quizAnswer === "X" || editingQuiz.quizAnswer === "2") formattedAnswer = "2";
+  const handleEditSave = async () => {
+    try {
+      let formattedAnswer = editingQuiz.quizAnswer;
+
+      if (Number(editingQuiz.quizType) === 2) {
+        if (editingQuiz.quizAnswer === "O" || editingQuiz.quizAnswer === "1")
+          formattedAnswer = "1";
+        if (editingQuiz.quizAnswer === "X" || editingQuiz.quizAnswer === "2")
+          formattedAnswer = "2";
+      }
+
+      const payload = {
+        quizNo: editingQuiz.quizNo,
+        teacherNo: editingQuiz.teacherNo,
+        quizTitle: editingQuiz.quizTitle,
+        quizType: editingQuiz.quizType,
+        quizQuestion: editingQuiz.quizQuestion,
+        quizAnswer: formattedAnswer,
+        choice1: editingQuiz.choice1,
+        choice2: editingQuiz.choice2,
+        choice3: editingQuiz.choice3,
+        choice4: editingQuiz.choice4,
+        choice5: editingQuiz.choice5,
+      };
+
+      await jwtAxios.patch(`/quizzes/${editingQuiz.quizNo}`, payload);
+
+      setQuizzes((prev) =>
+        prev.map((quiz) =>
+          quiz.quizNo === editingQuiz.quizNo
+            ? { ...editingQuiz, quizAnswer: formattedAnswer }
+            : quiz
+        )
+      );
+      setEditingQuiz(null);
+      alert("수정되었습니다.");
+    } catch (error) {
+      console.error("퀴즈 수정 실패:", error);
+      alert(error.response?.data?.message || "퀴즈 수정에 실패했습니다.");
     }
-
-    // 백엔드 QuizDTO 규격에 맞춘 페이로드 구성
-    const payload = {
-      quizNo: editingQuiz.quizNo,
-      teacherNo: editingQuiz.teacherNo,
-      quizTitle: editingQuiz.quizTitle,
-      quizType: editingQuiz.quizType,
-      quizQuestion: editingQuiz.quizQuestion,
-      quizAnswer: formattedAnswer, // 💡 "1" 또는 "2"로 변환된 값
-      choice1: editingQuiz.choice1,
-      choice2: editingQuiz.choice2,
-      choice3: editingQuiz.choice3,
-      choice4: editingQuiz.choice4,
-      choice5: editingQuiz.choice5,
-    };
-
-    await jwtAxios.patch(`/quizzes/${editingQuiz.quizNo}`, payload);
-
-    setQuizzes((prev) =>
-      prev.map((quiz) =>
-        quiz.quizNo === editingQuiz.quizNo ? { ...editingQuiz, quizAnswer: formattedAnswer } : quiz
-      )
-    );
-    setEditingQuiz(null);
-    alert("수정되었습니다.");
-  } catch (error) {
-    console.error("퀴즈 수정 실패:", error);
-    alert(error.response?.data?.message || "퀴즈 수정에 실패했습니다.");
-  }
-};
+  };
 
   return (
     <div>
-      {/* 상단 (퀴즈 출제 버튼은 공통 레이아웃에서 추가될 예정이므로 제거된 상태 유지) */}
+      {/* [학생 관리] 이미지와 동일한 초슬림 다크 스크롤바 */}
+      <style>{`
+        ::-webkit-scrollbar {
+          width: 5px !important;
+          height: 5px !important;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent !important;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #1f293d !important;
+          border-radius: 9999px !important;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #3b82f6 !important;
+        }
+      `}</style>
+
+      {/* 상단 */}
       <div className="flex items-center justify-between border-b border-gray-800 pb-5">
         <div>
-          <h2 className="text-lg font-bold">
-            ⚔ QUIZ 테이블 등록 현황
-          </h2>
+          <h2 className="text-lg font-bold">⚔ QUIZ 테이블 등록 현황</h2>
           <p className="mt-1 text-xs text-gray-500">
             내가 출제한 퀴즈를 관리합니다.
           </p>
@@ -192,108 +201,78 @@ const handleEditSave = async () => {
           </div>
         )}
 
-        {!loading && Array.isArray(quizzes) && quizzes.map((quiz, idx) => (
-          <div
-            key={quiz.quizNo || idx}
-            className="
-              rounded-xl
-              border
-              border-gray-800
-              bg-[#080d19]
-              p-5
-            "
-          >
-            {/* 제목 영역 */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="font-bold text-cyan-400">
-                  QUIZ_NO #{quiz.quizNo || "N/A"}
-                </span>
+        {!loading &&
+          Array.isArray(quizzes) &&
+          quizzes.map((quiz, idx) => (
+            <div
+              key={quiz.quizNo || idx}
+              className="rounded-xl border border-gray-800 bg-[#080d19] p-5"
+            >
+              {/* 제목 영역 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-cyan-400">
+                    QUIZ_NO #{quiz.quizNo || "N/A"}
+                  </span>
 
-                <span className="rounded bg-[#1e293b] px-2 py-1 text-[11px] text-gray-300">
-                  {typeName(quiz.quizType)}
-                </span>
+                  <span className="rounded bg-[#1e293b] px-2 py-1 text-[11px] text-gray-300">
+                    {typeName(quiz.quizType)}
+                  </span>
 
-                <span className="font-bold">
-                  {quiz.quizTitle || "제목 없음"}
+                  <span className="font-bold">
+                    {quiz.quizTitle || "제목 없음"}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(quiz)}
+                    className="rounded border border-gray-600 px-3 py-1.5 text-xs hover:bg-gray-800 cursor-pointer"
+                  >
+                    수정
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(quiz.quizNo)}
+                    className="rounded border border-red-900 bg-red-950/40 px-3 py-1.5 text-xs text-red-400 hover:bg-red-950 cursor-pointer"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+
+              {/* 문제 */}
+              <div className="mt-4 rounded-lg border border-gray-800 bg-[#050914] px-4 py-3 text-sm">
+                <span className="font-bold">문제 (QUIZ_QUESTION):</span>{" "}
+                <span className="text-gray-300">
+                  {quiz.quizQuestion || "내용 없음"}
                 </span>
               </div>
 
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleEdit(quiz)}
-                  className="
-                    rounded
-                    border
-                    border-gray-600
-                    px-3
-                    py-1.5
-                    text-xs
-                    hover:bg-gray-800
-                    cursor-pointer
-                  "
-                >
-                  수정
-                </button>
+              {/* 5지선다 */}
+              {quiz.quizType === 0 && (
+                <div className="mt-4 text-xs text-violet-300">
+                  오지선다형 문제
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  onClick={() => handleDelete(quiz.quizNo)}
-                  className="
-                    rounded
-                    border
-                    border-red-900
-                    bg-red-950/40
-                    px-3
-                    py-1.5
-                    text-xs
-                    text-red-400
-                    hover:bg-red-950
-                    cursor-pointer
-                  "
-                >
-                  삭제
-                </button>
+              {/* 단답형 */}
+              {quiz.quizType === 1 && (
+                <div className="mt-4 text-xs text-violet-300">단답형 문제</div>
+              )}
+
+              {/* O/X */}
+              {quiz.quizType === 2 && (
+                <div className="mt-4 text-xs text-blue-300">O / X 문제</div>
+              )}
+
+              <div className="mt-4 text-right text-xs font-bold text-emerald-400">
+                정답 (QUIZ_ANSWER): {quiz.quizAnswer || "미지정"}
               </div>
             </div>
-
-            {/* 문제 */}
-            <div className="mt-4 rounded-lg border border-gray-800 bg-[#050914] px-4 py-3 text-sm">
-              <span className="font-bold">
-                문제 (QUIZ_QUESTION):
-              </span>{" "}
-              <span className="text-gray-300">
-                {quiz.quizQuestion || "내용 없음"}
-              </span>
-            </div>
-
-            {/* 5지선다 */}
-            {quiz.quizType === 0 && (
-              <div className="mt-4 text-xs text-violet-300">
-                오지선다형 문제
-              </div>
-            )}
-
-            {/* 단답형 */}
-            {quiz.quizType === 1 && (
-              <div className="mt-4 text-xs text-violet-300">
-                단답형 문제
-              </div>
-            )}
-
-            {/* O/X */}
-            {quiz.quizType === 2 && (
-              <div className="mt-4 text-xs text-blue-300">
-                O / X 문제
-              </div>
-            )}
-
-            <div className="mt-4 text-right text-xs font-bold text-emerald-400">
-              정답 (QUIZ_ANSWER): {quiz.quizAnswer || "미지정"}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* 수정 모달 */}
@@ -338,11 +317,15 @@ const handleEditSave = async () => {
                   <div className="space-y-2">
                     {editingQuiz.choices?.map((choice, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-cyan-400 w-6">{index + 1}.</span>
+                        <span className="text-xs font-bold text-cyan-400 w-6">
+                          {index + 1}.
+                        </span>
                         <input
                           type="text"
                           value={choice || ""}
-                          onChange={(e) => handleChoiceChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleChoiceChange(index, e.target.value)
+                          }
                           className="w-full rounded-lg border border-gray-700 bg-[#070d19] px-3 py-2 outline-none focus:border-cyan-500 text-xs"
                           placeholder={`${index + 1}번 보기 입력`}
                         />
@@ -352,17 +335,19 @@ const handleEditSave = async () => {
                 </div>
               )}
 
-              {/* 정답 영역 (O/X 퀴즈일 경우 버튼형태로 선택 가능하게 변경) */}
+              {/* 정답 영역 */}
               <div>
                 <label className="mb-2 block text-xs text-gray-400">
                   정답 (QUIZ_ANSWER)
                 </label>
-                
+
                 {editingQuiz.quizType === 2 ? (
                   <div className="flex gap-4">
                     <button
                       type="button"
-                      onClick={() => setEditingQuiz(prev => ({ ...prev, quizAnswer: "O" }))}
+                      onClick={() =>
+                        setEditingQuiz((prev) => ({ ...prev, quizAnswer: "O" }))
+                      }
                       className={`flex-1 py-3 rounded-lg border text-sm font-bold transition cursor-pointer ${
                         editingQuiz.quizAnswer === "O"
                           ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40"
@@ -373,7 +358,9 @@ const handleEditSave = async () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditingQuiz(prev => ({ ...prev, quizAnswer: "X" }))}
+                      onClick={() =>
+                        setEditingQuiz((prev) => ({ ...prev, quizAnswer: "X" }))
+                      }
                       className={`flex-1 py-3 rounded-lg border text-sm font-bold transition cursor-pointer ${
                         editingQuiz.quizAnswer === "X"
                           ? "bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/40"
@@ -388,7 +375,11 @@ const handleEditSave = async () => {
                     name="quizAnswer"
                     value={editingQuiz.quizAnswer || ""}
                     onChange={handleEditChange}
-                    placeholder={editingQuiz.quizType === 0 ? "정답 번호 입력 (예: 1)" : "정답 입력"}
+                    placeholder={
+                      editingQuiz.quizType === 0
+                        ? "정답 번호 입력 (예: 1)"
+                        : "정답 입력"
+                    }
                     className="w-full rounded-lg border border-gray-700 bg-[#070d19] px-4 py-3 outline-none focus:border-cyan-500 text-sm"
                   />
                 )}
@@ -417,6 +408,4 @@ const handleEditSave = async () => {
       )}
     </div>
   );
-};
-
-export default ItemManagement;
+}

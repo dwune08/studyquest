@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom"; // 1. useLocation 추가
 import FooterMenu from "../components/menus/FooterMenu";
 import TopMenu from "../components/menus/TopMenu";
 import { useCustomNavigate } from "../hooks/useCustomNavigate";
@@ -14,6 +15,7 @@ const BasicLayout = ({
   userType,
 }) => {
   const { goEvent, goQuizList } = useCustomNavigate();
+  const location = useLocation(); // 2. 현재 경로 파악
 
   // Redux에 저장된 로그인 사용자 정보
   const reduxUser = useSelector((state) => state.loginSlice) || {};
@@ -22,6 +24,9 @@ const BasicLayout = ({
   const [studentStatus, setStudentStatus] = useState(null);
 
   const finalUserType = userInfo?.userType ?? userType ?? reduxUser.userType;
+
+  // 3. /quizzes/register 경로일 때만 푸터 숨김 처리
+  const isQuizRegisterPage = location.pathname === "/quizzes/register";
 
   useEffect(() => {
     // 학생인 경우에만 학생 상태 조회
@@ -82,12 +87,6 @@ const BasicLayout = ({
       100,
   };
 
-  console.log("선생님 학년 확인:", {
-  userInfoTeacherGrade: userInfo?.teacherGrade,
-  reduxTeacherGrade: reduxUser.teacherGrade,
-  finalTeacherGrade: finalUserInfo.teacherGrade,
-});
-
   const handleAttendance = (e) => {
     if (onAttendanceClick) {
       onAttendanceClick(e);
@@ -96,9 +95,6 @@ const BasicLayout = ({
   };
 
   const handleQuizDungeon = (e) => {
-    if (onQuizDungeonClick) {
-      onQuizDungeonClick(e);
-    }
     if (onQuizDungeonClick) {
       onQuizDungeonClick(e);
     }
@@ -118,12 +114,16 @@ const BasicLayout = ({
           {children}
         </main>
 
-        <nav className="shrink-0 w-full">
-          <FooterMenu
-            userType={userInfo?.userType}
-            onAttendanceClick={handleAttendance}
-            onQuizDungeonClick={handleQuizDungeon}/>
-        </nav>
+        {/* 4. /quizzes/register 페이지가 아닐 때만 푸터 출력 */}
+        {!isQuizRegisterPage && (
+          <nav className="shrink-0 w-full">
+            <FooterMenu
+              userType={finalUserType}
+              onAttendanceClick={handleAttendance}
+              onQuizDungeonClick={handleQuizDungeon}
+            />
+          </nav>
+        )}
       </div>
     </div>
   );
