@@ -12,7 +12,6 @@ const BasicLayout = ({
   onQuizDungeonClick,
   onLogout,
   userType,
-  showFooter = true
 }) => {
   const { goEvent, goQuizList } = useCustomNavigate();
 

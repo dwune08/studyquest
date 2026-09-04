@@ -63,52 +63,51 @@ const TopMenu = ({
   // 선생님 헤더
   // =========================
   if (isTeacher) {
-    const displayTeacherName =
-      teacherInfo?.userName || userName || "선생님";
+  const displayTeacherName =
+    teacherInfo?.userName || userName || "선생님";
 
-    const displayTeacherGrade =
-      teacherInfo?.teacherGrade;
+  const displayTeacherGrade =
+    teacherInfo?.teacherGrade;
 
-    return (
-      <header className="h-14 bg-[#0d1322] border-b border-gray-800/80 px-8 flex items-center justify-between text-sm w-full shrink-0 font-sans">
+  return (
+    /* relative 추가 */
+    <header className="relative h-14 bg-[#0d1322] border-b border-gray-800/80 px-8 flex items-center justify-between text-sm w-full shrink-0 font-sans">
 
-        {/* 왼쪽 - 로고 */}
-          <div className="flex items-center gap-3">
-            <div onClick={goTeacherPage}>
-              <span className="text-xl filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">🗡️</span>
+      {/* 왼쪽 - 로고 */}
+      <div className="flex items-center gap-3">
+        <div onClick={goTeacherPage}>
+          <span className="text-xl filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">🗡️</span>
 
-              <span className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap cursor-pointer">
-                STUDY:QUEST
-              </span>
-
-            </div>
-
-
-          <span className="px-2 py-0.5 bg-blue-950/80 border border-blue-500/40 rounded text-xs text-blue-400 font-bold ml-2">
-            ADMIN
+          <span className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap cursor-pointer">
+            STUDY:QUEST
           </span>
         </div>
 
-        {/* 가운데 - 선생님 정보 */}
-        <div className="text-gray-300 font-medium text-xs">
-          {displayTeacherGrade
-            ? `${displayTeacherGrade}학년 담당`
-            : subInfo}
-          {" "}
-          [{displayTeacherName}]
-        </div>
+        <span className="px-2 py-0.5 bg-blue-950/80 border border-blue-500/40 rounded text-xs text-blue-400 font-bold ml-2">
+          ADMIN
+        </span>
+      </div>
 
-        {/* 로그아웃 */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all cursor-pointer"
-        >
-          로그아웃
-        </button>
-      </header>
-    );
-  }
+      {/* 가운데 - 선생님 정보 (absolute absolute center 적용) */}
+      <div className="absolute left-1/2 -translate-x-1/2 text-gray-300 font-medium text-xs whitespace-nowrap pointer-events-none">
+        {displayTeacherGrade
+          ? `${displayTeacherGrade}학년 담당`
+          : subInfo}
+        {" "}
+        [{displayTeacherName}]
+      </div>
+
+      {/* 오른쪽 - 로그아웃 */}
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all cursor-pointer"
+      >
+        로그아웃
+      </button>
+    </header>
+  );
+}
 
   // =========================
   // 학생 헤더

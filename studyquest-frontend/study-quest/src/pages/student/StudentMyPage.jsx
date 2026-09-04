@@ -104,8 +104,7 @@ const StudentMyPage = () => {
 
   return (
     <BasicLayout userType="student" userInfo={topMenuUserInfo} onLogout={handleLogout}>
-      {/* 적절한 중형 사이즈 max-w-5xl 적용 */}
-      <div className="w-full max-w-5xl mx-auto px-4 py-4 text-white flex flex-col justify-start">
+      <div className="w-full max-w-5xl mx-auto px-4 py-2 sm:py-6 text-white flex flex-col justify-center min-h-[calc(100vh-120px)]">
         {warningMessage && (
           <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-xs sm:text-sm text-amber-300">
             ⚠️ {warningMessage}
@@ -118,21 +117,21 @@ const StudentMyPage = () => {
           </div>
         )}
 
-        <div className="rounded-2xl border border-slate-800 bg-[#0f1a2e]/90 p-6 sm:p-7 shadow-[0_0_35px_rgba(37,99,235,0.1)] backdrop-blur-sm">
+        <div className="rounded-2xl border border-slate-800 bg-[#0f1a2e]/90 p-5 sm:p-7 shadow-[0_0_35px_rgba(37,99,235,0.1)] backdrop-blur-sm">
           {/* 헤더 영역 */}
-          <header className="flex flex-col gap-5 border-b border-slate-800/80 pb-5 md:flex-row md:items-center">
+          <header className="flex flex-col gap-4 border-b border-slate-800/80 pb-5 md:flex-row md:items-center">
             <div>
               <p className="text-xs font-semibold tracking-wider text-blue-400">STUDENT PROFILE</p>
-              <h2 className="mt-1 text-2xl font-black text-slate-100">
+              <h2 className="mt-0.5 text-2xl font-black text-slate-100">
                 Lv.{currentStatus.statusLevel} {currentStatus.studentName}
               </h2>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-400">
                 {currentStatus.studentEmail}
               </p>
             </div>
 
             <div className="flex-1 md:px-6">
-              <div className="mb-2 flex justify-between text-xs font-bold">
+              <div className="mb-1.5 flex justify-between text-xs font-bold">
                 <span className="text-blue-400">EXP</span>
                 <span className="text-slate-400">
                   {currentStatus.statusExp} / {currentStatus.nextLevelExp}
@@ -158,47 +157,47 @@ const StudentMyPage = () => {
             </button>
           </header>
 
-          {/* 메인 2열 그리드 구조 */}
-          <main className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
-            {/* 프로필 캐릭 영역 */}
-            <section className="flex flex-col justify-between rounded-xl border border-slate-800 bg-[#081225]/80 p-5 text-center">
-              <div className="flex flex-col items-center">
-                <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/40 bg-[#071023] shadow-[0_0_20px_rgba(59,130,246,0.25)]">
-                  <img
-                    src={profileImage}
-                    alt={`레벨 ${currentLevel} 학생 프로필`}
-                    className="h-full w-full object-contain p-1"
-                  />
-                  <div className="absolute left-2 top-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-bold text-white">
-                    Lv. {currentLevel}
-                  </div>
+          {/* 메인 2열 레이아웃: items-start 적용으로 좌측 카드 높이가 늘어나지 않게 설정 */}
+          <main className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr] items-start">
+            
+            {/* 프로필 카드: justify-between 제거하여 내용물 크기만큼만 카드 생성 */}
+            <section className="flex flex-col items-center rounded-xl border border-slate-800 bg-[#081225]/80 p-5 text-center">
+              <div className="relative flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/40 bg-[#071023] shadow-[0_0_20px_rgba(59,130,246,0.25)]">
+                <img
+                  src={profileImage}
+                  alt={`레벨 ${currentLevel} 학생 프로필`}
+                  className="h-full w-full object-contain p-1"
+                />
+                <div className="absolute left-2 top-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-bold text-white">
+                  Lv. {currentLevel}
                 </div>
-
-                <h3 className="mt-4 text-lg font-bold text-slate-100">
-                  {currentStatus.studentName}
-                </h3>
-
-                <p className="mt-1 text-xs font-medium text-slate-400">
-                  {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
-                </p>
               </div>
 
+              <h3 className="mt-3 text-lg font-bold text-slate-100">
+                {currentStatus.studentName}
+              </h3>
+
+              <p className="mt-0.5 text-xs font-medium text-slate-400">
+                {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
+              </p>
+
+              {/* 3학년 아래 바로 배치되도록 mt-4 적용 */}
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="w-full mt-5 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-950/60 hover:bg-blue-900/70 text-blue-300 hover:text-blue-100 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-[0_0_12px_rgba(59,130,246,0.15)] flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full mt-4 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-950/60 hover:bg-blue-900/70 text-blue-300 hover:text-blue-100 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-[0_0_12px_rgba(59,130,246,0.15)] flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>⚙️</span> 정보 수정
               </button>
             </section>
 
-            {/* 능력치 & 랭킹 */}
-            <section className="space-y-5">
-              <div className="rounded-xl border border-slate-800 bg-[#081225]/80 p-5">
-                <div className="mb-4 flex items-center justify-between">
+            {/* 능력치 & 랭킹 영역 */}
+            <section className="space-y-4">
+              <div className="rounded-xl border border-slate-800 bg-[#081225]/80 p-4 sm:p-5">
+                <div className="mb-3 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-blue-400">MY STATUS</p>
-                    <h3 className="text-lg font-extrabold text-slate-100">나의 능력치</h3>
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-100">나의 능력치</h3>
                   </div>
 
                   <div className="rounded-xl border border-blue-500/30 bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-300">
@@ -206,32 +205,32 @@ const StudentMyPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-4 transition-all hover:border-blue-500/50">
-                    <div className="text-2xl">⚔️</div>
-                    <p className="mt-2 text-xs font-medium text-slate-400">공격력</p>
-                    <p className="mt-0.5 text-2xl font-black text-blue-400">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-3 sm:p-4 transition-all hover:border-blue-500/50">
+                    <div className="text-xl sm:text-2xl">⚔️</div>
+                    <p className="mt-1 text-xs font-medium text-slate-400">공격력</p>
+                    <p className="mt-0.5 text-xl sm:text-2xl font-black text-blue-400">
                       {currentStatus.statusAttack}
                     </p>
-                    <p className="mt-1 text-[11px] text-slate-500">5지선다</p>
+                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">5지선다</p>
                   </div>
 
-                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-4 transition-all hover:border-purple-500/50">
-                    <div className="text-2xl">🧠</div>
-                    <p className="mt-2 text-xs font-medium text-slate-400">지혜</p>
-                    <p className="mt-0.5 text-2xl font-black text-purple-400">
+                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-3 sm:p-4 transition-all hover:border-purple-500/50">
+                    <div className="text-xl sm:text-2xl">🧠</div>
+                    <p className="mt-1 text-xs font-medium text-slate-400">지혜</p>
+                    <p className="mt-0.5 text-xl sm:text-2xl font-black text-purple-400">
                       {currentStatus.statusWisdom}
                     </p>
-                    <p className="mt-1 text-[11px] text-slate-500">빈칸 채우기</p>
+                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">빈칸 채우기</p>
                   </div>
 
-                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-4 transition-all hover:border-cyan-500/50">
-                    <div className="text-2xl">⚡</div>
-                    <p className="mt-2 text-xs font-medium text-slate-400">스피드</p>
-                    <p className="mt-0.5 text-2xl font-black text-cyan-400">
+                  <div className="rounded-xl border border-slate-800/80 bg-[#0f1a2e] p-3 sm:p-4 transition-all hover:border-cyan-500/50">
+                    <div className="text-xl sm:text-2xl">⚡</div>
+                    <p className="mt-1 text-xs font-medium text-slate-400">스피드</p>
+                    <p className="mt-0.5 text-xl sm:text-2xl font-black text-cyan-400">
                       {currentStatus.statusSpeed}
                     </p>
-                    <p className="mt-1 text-[11px] text-slate-500">O / X 퀴즈</p>
+                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">O / X 퀴즈</p>
                   </div>
                 </div>
               </div>
@@ -239,9 +238,9 @@ const StudentMyPage = () => {
               {/* 주간 랭킹 */}
               <div
                 onClick={goRank}
-                className="group rounded-xl border border-slate-800 bg-[#081225]/80 p-5 cursor-pointer transition-all duration-200 hover:border-blue-500/50 hover:bg-[#0c182e] active:scale-[0.99]"
+                className="group rounded-xl border border-slate-800 bg-[#081225]/80 p-4 sm:p-5 cursor-pointer transition-all duration-200 hover:border-blue-500/50 hover:bg-[#0c182e] active:scale-[0.99]"
               >
-                <div className="mb-3.5 flex items-center justify-between">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2 group-hover:text-blue-300 transition-colors">
                     <span>🏆</span> 학년 주간 랭킹
                   </h3>
@@ -251,12 +250,12 @@ const StudentMyPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {topRankings.length > 0 ? (
                     topRankings.map((rankItem) => (
                       <div
                         key={rankItem.studentNo || rankItem.rank}
-                        className="flex items-center justify-between rounded-lg border border-slate-800/60 bg-[#0f1a2e] px-4 py-2.5 transition hover:border-slate-700"
+                        className="flex items-center justify-between rounded-lg border border-slate-800/60 bg-[#0f1a2e] px-3.5 py-2 transition hover:border-slate-700"
                       >
                         <span className="text-xs sm:text-sm font-medium text-slate-200">
                           {getRankBadge(rankItem.rank)} {rankItem.studentName}
@@ -267,7 +266,7 @@ const StudentMyPage = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="py-4 text-center text-xs text-slate-500">
+                    <div className="py-3 text-center text-xs text-slate-500">
                       랭킹 정보를 불러오는 중이거나 데이터가 없습니다.
                     </div>
                   )}
