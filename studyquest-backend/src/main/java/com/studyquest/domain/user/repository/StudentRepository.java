@@ -11,4 +11,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     // STUDENT_NO(학생번호)로 Student 엔티티 조회
     Optional<Student> findByStudentNo(Long studentNo);
+
+    long countByStudentGrade(Integer studentGrade);
 }

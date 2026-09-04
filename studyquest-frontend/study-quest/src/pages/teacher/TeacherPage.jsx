@@ -1,11 +1,16 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import BasicLayout from "../../layouts/BasicLayout"; // 프로젝트 구조에 맞춰 경로 확인
 import AssignedStudentStatistics from "./AssignedStudentStatistics";
 import ItemManagement from "./ItemManagement";
 import ScoreStatistics from "./ScoreStatistics";
 
 export default function TeacherPage() {
-  const [activeMenu, setActiveMenu] = useState("students");
+  const location = useLocation();
+
+  const [activeMenu, setActiveMenu] = useState(
+    location.state?.activeMenu ?? "students"
+  );
 
   // 헤더에 들어갈 선생님 정보 설정
   const teacherInfo = {
