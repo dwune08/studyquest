@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 const ModifyPage = () => {
   const { no } = useParams();
-  const { goStudentMyPage, goBack } = useCustomNavigate();
+  const { goStudentMyPage, goBack, goLogin } = useCustomNavigate();
   const { user, currentNo } = useAuth(); // 통합 인증 훅 활용 (Redux + LocalStorage 통합)
 
   const [loading, setLoading] = useState(false);
@@ -32,52 +32,52 @@ const ModifyPage = () => {
   });
 
   // 1. 본인 회원 번호 계산
-const targetUserNo = user?.userNo || currentNo;
+  const targetUserNo = user?.userNo || currentNo;
 
-useEffect(() => {
-  // 1-1. URL 파라미터 유효성 검사
-  if (!no || no === "undefined") {
-    alert("올바르지 않은 접근입니다.");
-    goBack();
-    return;
-  }
-
-  // 1-2. targetUserNo가 로딩 완료된 시점에만 본인 검증
-  if (targetUserNo) {
-    if (String(targetUserNo) !== String(no)) {
-      alert("본인의 정보만 수정할 수 있습니다.");
+  useEffect(() => {
+    // 1-1. URL 파라미터 유효성 검사
+    if (!no || no === "undefined") {
+      alert("올바르지 않은 접근입니다.");
       goBack();
       return;
     }
-  }
 
-  // 1-3. 회원 정보 단건 조회 API
-  const fetchMemberData = async () => {
-    try {
-      setLoading(true);
-      const res = await jwtAxios.get(`/users/${no}`);
-      if (res.data) {
-        setFormData(mapResponseToForm(res.data));
+    // 1-2. targetUserNo가 로딩 완료된 시점에만 본인 검증
+    if (targetUserNo) {
+      if (String(targetUserNo) !== String(no)) {
+        alert("본인의 정보만 수정할 수 있습니다.");
+        goBack();
+        return;
       }
-    } catch (err) {
-      console.error("회원 정보 로딩 실패:", err);
-      alert("회원 정보를 불러오는 데 실패했습니다.");
-    } finally {
-      setLoading(false);
     }
-  };
 
-  fetchMemberData();
+    // 1-3. 회원 정보 단건 조회 API
+    const fetchMemberData = async () => {
+      try {
+        setLoading(true);
+        const res = await jwtAxios.get(`/users/${no}`);
+        if (res.data) {
+          setFormData(mapResponseToForm(res.data));
+        }
+      } catch (err) {
+        console.error("회원 정보 로딩 실패:", err);
+        alert("회원 정보를 불러오는 데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-// 💡 핵심: goBack이나 user 객체 전체 대신, 식별 문자열/숫자인 'no'와 'targetUserNo'만 의존성으로 전달합니다.
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [no, targetUserNo]);
+    fetchMemberData();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [no, targetUserNo]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 회원 정보 수정
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -91,7 +91,7 @@ useEffect(() => {
 
       await jwtAxios.patch(`/users/${no}`, updateData);
       alert("회원 정보가 성공적으로 수정되었습니다.");
-      
+
       goStudentMyPage();
     } catch (err) {
       console.error("회원 정보 수정 실패:", err);
@@ -101,10 +101,40 @@ useEffect(() => {
     }
   };
 
-  const disabledInputStyle = 
+  // 캐릭터(회원) 삭제 처리
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "정말로 캐릭터를 삭제하시겠습니까?\n삭제된 계정과 모험 기록은 복구할 수 없습니다."
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      setLoading(true);
+      await jwtAxios.delete(`/users/${no}`);
+      alert("캐릭터가 성공적으로 삭제되었습니다.");
+
+      // 로컬 스토리지 정리 후 로그인 페이지로 이동
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      if (typeof goLogin === "function") {
+        goLogin();
+      } else {
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      console.error("캐릭터 삭제 실패:", err);
+      alert(err.response?.data?.message || "캐릭터 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const disabledInputStyle =
     "w-full bg-slate-950/30 border border-slate-800/60 rounded-lg h-10 px-3 text-xs text-slate-500 cursor-not-allowed outline-none select-none";
 
-  const editableInputStyle = 
+  const editableInputStyle =
     "w-full bg-slate-950/80 border border-blue-500/40 rounded-lg h-10 px-3 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 hover:border-blue-500/70 transition-all duration-200 shadow-[0_0_10px_rgba(59,130,246,0.1)]";
 
   return (
@@ -121,7 +151,7 @@ useEffect(() => {
       </div>
 
       {/* 폼 컨테이너 */}
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md h-[540px] flex flex-col relative overflow-hidden">
+      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md min-h-[540px] flex flex-col relative overflow-hidden">
         
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -133,7 +163,7 @@ useEffect(() => {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between pt-6 relative z-10">
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-3.5 mb-6">
             
             {/* 사용자 구분 (비활성화) */}
             <div className="flex items-center justify-between gap-2 h-9">
@@ -248,13 +278,25 @@ useEffect(() => {
 
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-widest rounded-xl transition-all duration-200 shadow-[0_4px_20px_rgba(37,99,235,0.4)] active:scale-[0.98] cursor-pointer border border-blue-400/30 shrink-0 mt-auto disabled:opacity-50"
-          >
-            {loading ? "수정 중..." : "🗡️ 캐릭터 정보 수정"}
-          </button>
+          {/* 하단 버튼 영역 (1:1 비율) */}
+          <div className="grid grid-cols-2 gap-3 mt-auto pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm tracking-wider rounded-xl transition-all duration-200 shadow-[0_4px_20px_rgba(37,99,235,0.3)] active:scale-[0.98] cursor-pointer border border-blue-400/30 disabled:opacity-50 flex items-center justify-center gap-1"
+            >
+              {loading ? "수정 중..." : "🗡️ 정보 수정"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={loading}
+              className="h-12 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 font-semibold text-xs sm:text-sm tracking-wider rounded-xl transition-all duration-200 border border-rose-500/30 hover:border-rose-500/60 active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1"
+            >
+              💀 캐릭터 삭제
+            </button>
+          </div>
         </form>
       </div>
     </div>

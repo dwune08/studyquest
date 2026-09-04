@@ -414,6 +414,12 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 
 ---
 
+## 👨‍🎓 학생 정보 수정
+
+![학생 정보 수정](./images/update.png)
+
+---
+
 ## 📝 퀴즈 메인
 
 ![퀴즈 메인](./images/quizGo.png)
