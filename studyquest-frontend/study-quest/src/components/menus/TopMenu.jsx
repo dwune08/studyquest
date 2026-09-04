@@ -12,21 +12,10 @@ const TopMenu = ({
   maxExp = 100,
   subInfo = "1학년 담당 선생님",
   onLogout,
-
-  
 }) => {
-
-  console.log("TopMenu 최종 props:", {
-  role,
-  userType,
-  userName,
-  userLevel,
-  currentExp,
-  maxExp,
-});
   const { goLogin, goStudentMyPage, goTeacherPage } = useCustomNavigate();
 
-  // 선생님 로그인 정보
+  // 선생님 로그인 정보 State
   const [teacherInfo, setTeacherInfo] = useState(null);
 
   const isTeacher =
@@ -34,7 +23,7 @@ const TopMenu = ({
     role === "teacher" ||
     role === "admin";
 
-  // 선생님인 경우에만 localStorage에서 정보 가져오기
+  // 선생님인 경우에만 정보 가져오기
   useEffect(() => {
     if (!isTeacher || !userNo) return;
 
@@ -60,59 +49,57 @@ const TopMenu = ({
   };
 
   // =========================
-  // 선생님 헤더
+  // 선생님용 헤더
   // =========================
   if (isTeacher) {
-  const displayTeacherName =
-    teacherInfo?.userName || userName || "선생님";
+    const displayTeacherName =
+      teacherInfo?.userName || userName || "선생님";
 
-  const displayTeacherGrade =
-    teacherInfo?.teacherGrade;
+    const displayTeacherGrade =
+      teacherInfo?.teacherGrade;
 
-  return (
-    /* relative 추가 */
-    <header className="relative h-14 bg-[#0d1322] border-b border-gray-800/80 px-8 flex items-center justify-between text-sm w-full shrink-0 font-sans">
+    return (
+      <header className="relative h-14 bg-[#0d1322] border-b border-gray-800/80 px-8 flex items-center justify-between text-sm w-full shrink-0 font-sans">
+        {/* 로고 영역 */}
+        <div className="flex items-center gap-3">
+          <div 
+            onClick={goTeacherPage}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <span className="text-xl filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">🗡️</span>
+            <span className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap">
+              STUDY:QUEST
+            </span>
+          </div>
 
-      {/* 왼쪽 - 로고 */}
-      <div className="flex items-center gap-3">
-        <div onClick={goTeacherPage}>
-          <span className="text-xl filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">🗡️</span>
-
-          <span className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap cursor-pointer">
-            STUDY:QUEST
+          <span className="px-2 py-0.5 bg-blue-950/80 border border-blue-500/40 rounded text-xs text-blue-400 font-bold ml-2">
+            ADMIN
           </span>
         </div>
 
-        <span className="px-2 py-0.5 bg-blue-950/80 border border-blue-500/40 rounded text-xs text-blue-400 font-bold ml-2">
-          ADMIN
-        </span>
-      </div>
+        {/* 선생님 정보 (중앙 정렬) */}
+        <div className="absolute left-1/2 -translate-x-1/2 text-gray-300 font-medium text-xs whitespace-nowrap pointer-events-none">
+          {displayTeacherGrade
+            ? `${displayTeacherGrade}학년 담당`
+            : subInfo}{" "}
+          [{displayTeacherName}]
+        </div>
 
-      {/* 가운데 - 선생님 정보 (absolute absolute center 적용) */}
-      <div className="absolute left-1/2 -translate-x-1/2 text-gray-300 font-medium text-xs whitespace-nowrap pointer-events-none">
-        {displayTeacherGrade
-          ? `${displayTeacherGrade}학년 담당`
-          : subInfo}
-        {" "}
-        [{displayTeacherName}]
-      </div>
-
-      {/* 오른쪽 - 로그아웃 */}
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all cursor-pointer"
-      >
-        로그아웃
-      </button>
-    </header>
-  );
-}
+        {/* 로그아웃 */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="px-3 py-1 bg-[#161f33] border border-gray-700/60 hover:border-gray-500 rounded text-xs text-gray-300 transition-all cursor-pointer"
+        >
+          로그아웃
+        </button>
+      </header>
+    );
+  }
 
   // =========================
-  // 학생 헤더
+  // 학생용 헤더
   // =========================
-
   const expPercentage =
     maxExp > 0
       ? Math.min((currentExp / maxExp) * 100, 100)
@@ -120,18 +107,18 @@ const TopMenu = ({
 
   return (
     <header className="w-full bg-slate-900/90 border-b border-slate-800/80 px-8 py-3.5 grid grid-cols-3 items-center shadow-lg relative z-10 shrink-0 font-sans">
-
-      {/* 왼쪽 - 로고 + 학생 정보 */}
+      {/* 로고 & 학생 레벨/이름 */}
       <div className="flex items-center gap-3 justify-start">
-        <div onClick={goStudentMyPage}>
+        <div 
+          onClick={goStudentMyPage}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <span className="text-xl filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">
             🗡️
           </span>
-
-          <span  className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap cursor-pointer">
+          <span className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-blue-300 whitespace-nowrap">
             STUDY:QUEST
           </span>
-
         </div>
 
         <span className="text-xs font-bold bg-blue-950/80 border border-blue-500/40 text-blue-300 px-3 py-1 rounded-full whitespace-nowrap">
@@ -139,7 +126,7 @@ const TopMenu = ({
         </span>
       </div>
 
-      {/* EXP */}
+      {/* EXP 경험치 바 */}
       <div className="flex items-center justify-center gap-3 w-full max-w-sm justify-self-center">
         <span className="text-xs font-black text-slate-400 tracking-wider shrink-0">
           EXP
@@ -157,7 +144,7 @@ const TopMenu = ({
         </span>
       </div>
 
-      {/* 로그아웃 */}
+      {/* 로그아웃 버튼 */}
       <div className="flex items-center justify-end">
         <button
           type="button"

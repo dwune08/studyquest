@@ -157,6 +157,7 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 ### 마이페이지
 
 - 학생 기본 정보 확인
+- 학생 기본 정보 수정
 - 레벨 및 경험치 확인
 - 학습 관련 정보 확인
 - 상위 랭킹 조회
@@ -165,9 +166,8 @@ Study:Quest는 Spring Boot 기반의 Backend와 React 기반의 Frontend를 분�
 
 - 등록된 퀴즈 목록 조회
 - 퀴즈 문제 풀이
-- 객관식 문제
-- 주관식 문제
-- O/X 문제
+- 객관식 문제 (O/X 퀴즈, 5지선다 퀴즈)
+- 주관식 문제 (단답형 퀴즈)
 - 퀴즈 제출
 
 ### 퀴즈 결과

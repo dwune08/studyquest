@@ -157,10 +157,10 @@ const StudentMyPage = () => {
             </button>
           </header>
 
-          {/* 메인 2열 레이아웃: items-start 적용으로 좌측 카드 높이가 늘어나지 않게 설정 */}
+          {/* 메인 2열 레이아웃 */}
           <main className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr] items-start">
             
-            {/* 프로필 카드: justify-between 제거하여 내용물 크기만큼만 카드 생성 */}
+            {/* 프로필 카드 */}
             <section className="flex flex-col items-center rounded-xl border border-slate-800 bg-[#081225]/80 p-5 text-center">
               <div className="relative flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/40 bg-[#071023] shadow-[0_0_20px_rgba(59,130,246,0.25)]">
                 <img
@@ -181,7 +181,6 @@ const StudentMyPage = () => {
                 {currentStatus.studentGrade ? `${currentStatus.studentGrade}학년` : "-"}
               </p>
 
-              {/* 3학년 아래 바로 배치되도록 mt-4 적용 */}
               <button
                 type="button"
                 onClick={handleEditClick}
