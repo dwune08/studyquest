@@ -125,9 +125,6 @@ const StudentMyPage = () => {
               <h2 className="mt-0.5 text-2xl font-black text-slate-100">
                 Lv.{currentStatus.statusLevel} {currentStatus.studentName}
               </h2>
-              <p className="mt-0.5 text-xs text-slate-400">
-                {currentStatus.studentEmail}
-              </p>
             </div>
 
             <div className="flex-1 md:px-6">
