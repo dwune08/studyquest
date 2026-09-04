@@ -51,23 +51,23 @@ public class CustomSecurityConfig {
                         // 1. 회원가입 및 로그인 인증 허용 (/users/login, /users, /users/refresh)
                         .requestMatchers(HttpMethod.POST, "/users", "/users/login", "/users/refresh").permitAll()
 
-                        // 2. 마이페이지 및 학생 정보 관련 API 권한 부여 (추가됨 ⭐️)
+                        // 2. 마이페이지 및 학생 정보 관련 API 권한 부여
                         .requestMatchers("/mypage/**", "/student/**", "/status/**", "/event/**").hasRole("STUDENT")
 
                         // 3. 랭킹, 출석 API
-                        .requestMatchers("/ranks", "/ranks/**", "/event", "/event/**").authenticated()
+                        .requestMatchers("/ranks", "/ranks/**", "/event", "/event/**").hasRole("STUDENT")
 
-                        // 4. 선생님 전용 API (퀴즈 생성/수정/삭제)
+                        // 4. 퀴즈 결과 제출 API
+                        .requestMatchers(HttpMethod.POST, "/results").hasRole("STUDENT")
+
+                        // 5. 선생님 전용 API (퀴즈 생성/수정/삭제)
                         .requestMatchers("/teacher/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.POST, "/quizzes/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.PATCH, "/quizzes/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/quizzes/**").hasRole("TEACHER")
 
-                        // 5. 학생/선생님 공용 조회 API
+                        // 6. 학생/선생님 공용 조회 API
                         .requestMatchers(HttpMethod.GET, "/quizzes", "/quizzes/**", "/results/**", "/teachers/**").authenticated()
-
-                        // 6. 결과 제출 (/results)
-                        .requestMatchers(HttpMethod.POST, "/results").hasRole("STUDENT")
 
                         // 7. Swagger UI 및 Options preflight
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

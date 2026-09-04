@@ -24,15 +24,14 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public PageResponseDTO<RankDTO> getRankings(PageRequestDTO pageRequestDTO, Long loginStudentNo, boolean isInitialRequest) {
-        log.info("👉 [디버깅] 진입 확인 - page: {}, size: {}, loginStudentNo: {}, isInitialRequest: {}",pageRequestDTO.getPage(), pageRequestDTO.getSize(), loginStudentNo, isInitialRequest);
-        int targetPage = pageRequestDTO.getPage();
-        int size = pageRequestDTO.getSize(); // 👈 프론트에서 넘어온 size(6)를 정확히 가져옵니다.
 
-        // 1. 최초 진입 시 내 랭킹 위치 자동 계산
+        int targetPage = pageRequestDTO.getPage();
+        int size = pageRequestDTO.getSize();
+
+        // 1. 최초 진입 시 내 랭킹 위치 계산
         if (isInitialRequest && loginStudentNo != null) {
             Integer myRank = rankRepository.findMyRank(loginStudentNo);
             if (myRank != null && myRank > 0) {
-                // 💡 30위이고 size가 6일 때: (30 - 1) / 6 + 1 = 5페이지가 정확히 계산됨
                 targetPage = ((myRank - 1) / size) + 1;
             }
         }
@@ -42,7 +41,7 @@ public class RankServiceImpl implements RankService {
         adjustedRequestDTO.setSearchType(pageRequestDTO.getSearchType());
         adjustedRequestDTO.setKeyword(pageRequestDTO.getKeyword());
 
-        // 3. Pageable 변환 (0-index 기반, size는 6으로 적용)
+        // 3. Pageable 변환
         Pageable pageable = PageRequest.of(targetPage - 1, size);
 
         // 4. DB 조회 및 순위 동적 부여
@@ -54,7 +53,7 @@ public class RankServiceImpl implements RankService {
             dtoList.get(i).setRank(startRank + i);
         }
 
-        // 5. 계산된 정확한 페이지 정보와 6개씩 담긴 리스트 반환
+        // 5. 계산된 정확한 페이지 정보와 리스트 반환
         return new PageResponseDTO<>(dtoList, adjustedRequestDTO, rankPage.getTotalElements());
     }
 }

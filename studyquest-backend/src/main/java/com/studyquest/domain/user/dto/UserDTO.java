@@ -19,8 +19,8 @@ public class UserDTO extends User {
     private String userPw;
     private String userName;
     private Integer userType;
-    private Long teacherNo; // 👈 추가
-    private Long studentNo; // 👈 추가
+    private Long teacherNo;
+    private Long studentNo;
 
     private List<String> roleNames;
 
@@ -38,8 +38,8 @@ public class UserDTO extends User {
         this.userPw = userPw;
         this.userName = userName;
         this.userType = userType;
-        this.teacherNo = teacherNo; // 👈 추가
-        this.studentNo = studentNo; // 👈 추가
+        this.teacherNo = teacherNo;
+        this.studentNo = studentNo;
         this.roleNames = roleNames;
     }
 
@@ -51,8 +51,8 @@ public class UserDTO extends User {
         dataMap.put("userEmail", userEmail);
         dataMap.put("userName", userName);
         dataMap.put("userType", userType);
-        dataMap.put("teacherNo", teacherNo);   // ⭐️ 클레임에 추가
-        dataMap.put("studentNo", studentNo);   // ⭐️ 클레임에 추가
+        dataMap.put("teacherNo", teacherNo);
+        dataMap.put("studentNo", studentNo);
         dataMap.put("roleNames", roleNames);
 
         return dataMap;

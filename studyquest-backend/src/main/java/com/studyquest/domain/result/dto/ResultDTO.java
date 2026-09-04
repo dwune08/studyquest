@@ -21,7 +21,6 @@ public class ResultDTO {
     private Boolean isCorrect;
     private LocalDateTime resultDate;
 
-    // Entity -> DTO 변환 정적 팩토리 메서드
     public static ResultDTO fromEntity(Result result) {
         if (result == null) {
             return null;

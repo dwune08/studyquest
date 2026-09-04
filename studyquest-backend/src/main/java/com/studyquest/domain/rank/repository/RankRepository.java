@@ -10,13 +10,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface RankRepository extends JpaRepository<Status, Long> {
 
-    // 💡 1. 목록 조회 쿼리 끝에 동점자 처리용 정렬 조건(st.studentNo ASC) 추가
+    // 랭킹 목록
     @Query("SELECT new com.studyquest.domain.rank.dto.RankDTO(st.studentNo, u.userName, s.statusLevel, s.statusExp) " +
             "FROM Status s JOIN s.student st JOIN st.user u " +
             "ORDER BY s.statusLevel DESC, s.statusExp DESC, st.studentNo ASC")
     Page<RankDTO> findRanking(Pageable pageable);
 
-    // 💡 2. 순위 계산 쿼리에도 동일한 정렬 규칙(레벨, 경험치, 그리고 나보다 studentNo가 작은 동점자 수) 반영
+    // 내 순위 확인
     @Query("""
         SELECT COUNT(s) + 1
         FROM Status s JOIN s.student st

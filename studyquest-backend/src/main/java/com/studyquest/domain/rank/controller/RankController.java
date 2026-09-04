@@ -26,7 +26,7 @@ public class RankController {
             @RequestParam(value = "size", defaultValue = "6") int size,
             @AuthenticationPrincipal UserDTO userDTO) {
 
-        // 💡 핵심: page 파라미터가 아예 넘어오지 않았으면 최초 진입(true)
+        // page 파라미터가 아예 넘어오지 않았으면 최초 진입
         boolean isInitialRequest = (page == null);
 
         // 최초 진입 시 임시로 1페이지를 넣고, 서비스 내부에서 내 순위로 덮어씌움

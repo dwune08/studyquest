@@ -20,7 +20,6 @@ public class ResultController {
     private final ResultService resultService;
 
     // 내 전체 퀴즈 제출 이력 조회 (학생 전용, 페이징)
-    // 요청 예시: GET /results/me?page=1&size=10
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<PageResponseDTO<ResultDTO>> getMyResults(
@@ -32,7 +31,6 @@ public class ResultController {
     }
 
     // 내 특정 퀴즈 제출 결과 단건 조회 (학생 전용)
-    // 요청 예시: GET /results/me/quiz?quizNo=1
     @GetMapping("/me/quiz")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ResultDTO> getMyResultByQuiz(
@@ -44,7 +42,6 @@ public class ResultController {
     }
 
     // 특정 퀴즈의 전체 학생 제출 결과 목록 조회 (선생님 전용, 페이징)
-    // 요청 예시: GET /results/quiz/1?page=1&size=10
     @GetMapping("/quiz/{quizNo}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<PageResponseDTO<ResultDTO>> getResultsByQuiz(
@@ -56,7 +53,6 @@ public class ResultController {
     }
 
     // 퀴즈 답안 제출 및 채점 (학생 전용)
-    // 요청 예시: POST /results
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ResultDTO> submitResult(

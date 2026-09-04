@@ -29,7 +29,6 @@ public class StudentMyPageServiceImpl implements StudentMyPageService {
     @Override
     @Transactional
     public StudentMyPageDTO getStudentMyPage(Long userNo) {
-        log.info("학생 마이페이지 조회 시작 - userNo: {}", userNo);
 
         // 1. userNo 기반으로 Student 엔티티 조회
         Student student = studentRepository.findByUser_UserNo(userNo)

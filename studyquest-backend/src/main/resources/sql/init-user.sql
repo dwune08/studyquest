@@ -1,4 +1,7 @@
+-- 계정 생성 및 권한 부여 쿼리
+
 CREATE USER studyquest IDENTIFIED BY study1234;
 GRANT CREATE SESSION TO studyquest;
 GRANT CONNECT, RESOURCE TO studyquest;
 ALTER USER studyquest QUOTA UNLIMITED ON USERS;
+

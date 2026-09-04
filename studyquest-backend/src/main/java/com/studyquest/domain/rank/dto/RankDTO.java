@@ -19,7 +19,6 @@ public class RankDTO {
     private Integer level;         // 레벨 (statusLevel)
     private Integer exp;           // 경험치 (statusExp)
 
-    // JPQL SELECT new 생성자 전용 (rank 제외 4개 필드 매핑)
     public RankDTO(Long studentNo, String studentName, Integer level, Integer exp) {
         this.studentNo = studentNo;
         this.studentName = studentName;

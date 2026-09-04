@@ -32,7 +32,6 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "로그인 처리 및 토큰 발급", description = "이메일과 비밀번호로 로그인하여 Access/Refresh Token을 발급받습니다.")
     public Map<String, Object> login(@RequestBody LoginDTO loginDTO) {
-        log.info("========== 로그인 요청: {} ==========", loginDTO.getUserEmail());
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDTO.getUserEmail(), loginDTO.getUserPw());

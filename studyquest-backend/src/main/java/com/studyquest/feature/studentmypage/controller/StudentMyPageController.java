@@ -34,7 +34,6 @@ public class StudentMyPageController {
         }
 
         Long loginStudentNo = userDTO.getUserNo();
-        log.info("GET /mypage/me - 요청 학생 번호: {}", loginStudentNo);
 
         StudentMyPageDTO response = studentMyPageService.getStudentMyPage(loginStudentNo);
         return ResponseEntity.ok(response);
@@ -46,7 +45,6 @@ public class StudentMyPageController {
      */
     @GetMapping("/student/{studentNo}")
     public ResponseEntity<StudentMyPageDTO> getStudentMyPage(@PathVariable("studentNo") Long studentNo) {
-        log.info("GET /mypage/student/{} 요청", studentNo);
         StudentMyPageDTO response = studentMyPageService.getStudentMyPage(studentNo);
         return ResponseEntity.ok(response);
     }
