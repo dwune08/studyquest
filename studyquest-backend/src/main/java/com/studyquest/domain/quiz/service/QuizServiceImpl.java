@@ -6,7 +6,6 @@ import com.studyquest.domain.quiz.entity.Quiz;
 import com.studyquest.domain.quiz.repository.ChoicesRepository;
 import com.studyquest.domain.quiz.repository.QuizRepository;
 import com.studyquest.domain.user.repository.StudentRepository;
-import com.studyquest.domain.user.repository.UserRepository;
 import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -78,17 +77,27 @@ public class QuizServiceImpl implements QuizService {
 
         Quiz savedQuiz = quizRepository.save(quiz);
 
-        // 2. Choices 엔티티 생성 및 저장 (savedQuiz 연계)
+        // 2. 퀴즈 타입에 따른 선택지 처리
+        // 5지선다(0)가 아닌 경우, NOT NULL 제약조건을 만족하기 위해 choice1, choice2에 더미 값 할당
+        String c1 = quizDTO.getChoice1();
+        String c2 = quizDTO.getChoice2();
+
+        if (quizDTO.getQuizType() != 0) {
+            c1 = "-";
+            c2 = "-";
+        }
+
+        // 3. Choices 엔티티 생성 및 저장
         Choices choices = Choices.builder()
-                .quiz(savedQuiz) // 외래키 혹은 연관관계 매핑
-                .choice1(quizDTO.getChoice1())
-                .choice2(quizDTO.getChoice2())
+                .quiz(savedQuiz)
+                .choice1(c1)
+                .choice2(c2)
                 .choice3(quizDTO.getChoice3())
                 .choice4(quizDTO.getChoice4())
                 .choice5(quizDTO.getChoice5())
                 .build();
 
-        Choices savedChoices = choicesRepository.save(choices); // 👈 선택지 DB 저장 필수!
+        Choices savedChoices = choicesRepository.save(choices);
 
         return QuizDTO.fromEntity(savedQuiz, savedChoices);
     }
