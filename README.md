@@ -356,7 +356,7 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 ### 전체 ERD
 
 <p align="center">
-  <a href="./docs/erd.png">
+  <a href="./studyquest-backend/docs/erd.png">
     <img src="./studyquest-backend/docs/erd.png" width="100%">
   </a>
 </p>
@@ -366,26 +366,26 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 <details>
 <summary>👤 User / Student / Teacher </summary>
 
-<img src="./docs/user.png" width="100%">
-<img src="./docs/student.png" width="100%">
-<img src="./docs/teacher.png" width="100%">
+<img src="./studyquest-backend/docs/user.png" width="100%">
+<img src="./studyquest-backend/docs/student.png" width="100%">
+<img src="./studyquest-backend/docs/teacher.png" width="100%">
 
 </details>
 
 <details>
 <summary>📝 Quiz / Result / Option</summary>
 
-<img src="./docs/quiz.png" width="100%">
-<img src="./docs/result.png" width="100%">
-<img src="./docs/option.png" width="100%">
+<img src="./studyquest-backend/docs/quiz.png" width="100%">
+<img src="./studyquest-backend/docs/result.png" width="100%">
+<img src="./studyquest-backend/docs/option.png" width="100%">
 
 </details>
 
 <details>
 <summary>📅 Attendance / Status</summary>
 
-<img src="./docs/attendance.png" width="100%">
-<img src="./docs/status.png" width="100%">
+<img src="./studyquest-backend/docs/attendance.png" width="100%">
+<img src="./studyquest-backend/docs/status.png" width="100%">
 
 </details>
 
@@ -395,34 +395,34 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 
 ## 🏠 메인 페이지
 
-![메인페이지](./images/mainPage.png)
+![메인페이지](./studyquest-backend/images/mainPage.png)
 
 
 
 ## 🔐 로그인 및 회원가입
 
 <p align="center">
-  <img src="./images/join.png" width="48%" />
-  <img src="./images/login.png" width="48%" />
+  <img src="./studyquest-backend/images/join.png" width="48%" />
+  <img src="./studyquest-backend/images/login.png" width="48%" />
 </p>
 
 ---
 
 ## 👨‍🎓 학생 메인
 
-![학생 메인](./images/student.png)
+![학생 메인](./studyquest-backend/images/student.png)
 
 ---
 
 ## 👨‍🎓 학생 정보 수정
 
-![학생 정보 수정](./images/update.png)
+![학생 정보 수정](./studyquest-backend/images/update.png)
 
 ---
 
 ## 📝 퀴즈 메인
 
-![퀴즈 메인](./images/quizGo.png)
+![퀴즈 메인](./studyquest-backend/images/quizGo.png)
 
 ---
 
@@ -431,13 +431,13 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 <table align="center">
   <tr>
     <td width="33%" align="center">
-      <img src="./images/quiz-1.png" width="100%" alt="퀴즈 화면 1" />
+      <img src="./studyquest-backend/images/quiz-1.png" width="100%" alt="퀴즈 화면 1" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/quiz-2.png" width="100%" alt="퀴즈 화면 2" />
+      <img src="./studyquest-backend/images/quiz-2.png" width="100%" alt="퀴즈 화면 2" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/quiz-3.png" width="100%" alt="퀴즈 화면 3" />
+      <img src="./studyquest-backend/images/quiz-3.png" width="100%" alt="퀴즈 화면 3" />
     </td>
   </tr>
 </table>
@@ -449,13 +449,13 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 <table align="center">
   <tr>
     <td width="33%" align="center">
-      <img src="./images/quizDetail1.png" width="100%" alt="퀴즈 화면 1" />
+      <img src="./studyquest-backend/images/quizDetail1.png" width="100%" alt="퀴즈 화면 1" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/quizDetail2.png" width="100%" alt="퀴즈 화면 2" />
+      <img src="./studyquest-backend/images/quizDetail2.png" width="100%" alt="퀴즈 화면 2" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/quizDetail3.png" width="100%" alt="퀴즈 화면 3" />
+      <img src="./studyquest-backend/images/quizDetail3.png" width="100%" alt="퀴즈 화면 3" />
     </td>
   </tr>
 </table>
@@ -465,23 +465,23 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 ## 📊 퀴즈 결과
 
 <p align="center">
-  <img src="./images/quizGood.png" width="48%" />
-  <img src="./images/quizFail.png" width="48%" />
+  <img src="./studyquest-backend/images/quizGood.png" width="48%" />
+  <img src="./studyquest-backend/images/quizFail.png" width="48%" />
 </p>
 
 ---
 
 ## 🏆 랭킹
 
-![랭킹](./images/rank.png)
+![랭킹](./studyquest-backend/images/rank.png)
 
 ---
 
 ## 🎁 출석
 
 <p align="center">
-  <img src="./images/event1.png" width="48%" />
-  <img src="./images/event2.png" width="48%" />
+  <img src="./studyquest-backend/images/event1.png" width="48%" />
+  <img src="./studyquest-backend/images/event2.png" width="48%" />
 </p>
 
 ---
@@ -491,16 +491,16 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 <table align="center">
   <tr>
     <td width="33%" align="center">
-      <img src="./images/teacher1.png" width="100%" alt="퀴즈 화면 1" />
+      <img src="./studyquest-backend/images/teacher1.png" width="100%" alt="퀴즈 화면 1" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/teacher2.png" width="100%" alt="퀴즈 화면 2" />
+      <img src="./studyquest-backend/images/teacher2.png" width="100%" alt="퀴즈 화면 2" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/teacher3.png" width="100%" alt="퀴즈 화면 3" />
+      <img src="./studyquest-backend/images/teacher3.png" width="100%" alt="퀴즈 화면 3" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/teacher4.png" width="100%" alt="퀴즈 화면 3" />
+      <img src="./studyquest-backend/images/teacher4.png" width="100%" alt="퀴즈 화면 3" />
     </td>
   </tr>
 </table>
@@ -512,13 +512,13 @@ StudyQuest에서 제공하는 REST API 명세입니다.
 <table align="center">
   <tr>
     <td width="33%" align="center">
-      <img src="./images/regist1.png" width="100%" alt="퀴즈 화면 1" />
+      <img src="./studyquest-backend/images/regist1.png" width="100%" alt="퀴즈 화면 1" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/regist2.png" width="100%" alt="퀴즈 화면 2" />
+      <img src="./studyquest-backend/images/regist2.png" width="100%" alt="퀴즈 화면 2" />
     </td>
     <td width="33%" align="center">
-      <img src="./images/regist3.png" width="100%" alt="퀴즈 화면 3" />
+      <img src="./studyquest-backend/images/regist3.png" width="100%" alt="퀴즈 화면 3" />
     </td>
   </tr>
 </table>
