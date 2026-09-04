@@ -24,34 +24,37 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public PageResponseDTO<RankDTO> getRankings(PageRequestDTO pageRequestDTO, Long loginStudentNo, boolean isInitialRequest) {
-
+        log.info("👉 [디버깅] 진입 확인 - page: {}, size: {}, loginStudentNo: {}, isInitialRequest: {}",pageRequestDTO.getPage(), pageRequestDTO.getSize(), loginStudentNo, isInitialRequest);
         int targetPage = pageRequestDTO.getPage();
+        int size = pageRequestDTO.getSize(); // 👈 프론트에서 넘어온 size(6)를 정확히 가져옵니다.
 
         // 1. 최초 진입 시 내 랭킹 위치 자동 계산
         if (isInitialRequest && loginStudentNo != null) {
             Integer myRank = rankRepository.findMyRank(loginStudentNo);
-
             if (myRank != null && myRank > 0) {
-                targetPage = (myRank - 1) / pageRequestDTO.getSize() + 1;
+                // 💡 30위이고 size가 6일 때: (30 - 1) / 6 + 1 = 5페이지가 정확히 계산됨
+                targetPage = ((myRank - 1) / size) + 1;
             }
         }
 
-        // 💡 핵심: 공통 DTO인 pageRequestDTO의 page 속성을 계산된 targetPage로 변경
-        pageRequestDTO.setPage(targetPage);
+        // 2. 새로운 PageRequestDTO 객체 생성 (size 유지)
+        PageRequestDTO adjustedRequestDTO = new PageRequestDTO(targetPage, size);
+        adjustedRequestDTO.setSearchType(pageRequestDTO.getSearchType());
+        adjustedRequestDTO.setKeyword(pageRequestDTO.getKeyword());
 
-        // 2. Pageable 변환 (0-index 기반)
-        Pageable pageable = PageRequest.of(targetPage - 1, pageRequestDTO.getSize());
+        // 3. Pageable 변환 (0-index 기반, size는 6으로 적용)
+        Pageable pageable = PageRequest.of(targetPage - 1, size);
 
-        // 3. DB 조회 및 순위 동적 부여
+        // 4. DB 조회 및 순위 동적 부여
         Page<RankDTO> rankPage = rankRepository.findRanking(pageable);
-        int startRank = (targetPage - 1) * pageRequestDTO.getSize() + 1;
+        int startRank = (targetPage - 1) * size + 1;
 
         List<RankDTO> dtoList = rankPage.getContent();
         for (int i = 0; i < dtoList.size(); i++) {
             dtoList.get(i).setRank(startRank + i);
         }
 
-        // 4. 공통 생성자 그대로 호출 (pageRequestDTO.getPage()가 targetPage인 11을 반환함)
-        return new PageResponseDTO<>(dtoList, pageRequestDTO, rankPage.getTotalElements());
+        // 5. 계산된 정확한 페이지 정보와 6개씩 담긴 리스트 반환
+        return new PageResponseDTO<>(dtoList, adjustedRequestDTO, rankPage.getTotalElements());
     }
 }

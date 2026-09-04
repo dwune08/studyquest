@@ -10,8 +10,7 @@ const RankPage = () => {
 
   const ITEMS_PER_PAGE = 6;
 
-  // 💡 핵심: 초기값을 null로 설정하여 최초 요청 시 page 파라미터를 안 넘김
-  const [currentPage, setCurrentPage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [rankings, setRankings] = useState([]);
   const [pageInfo, setPageInfo] = useState({
     totalPage: 1,
@@ -20,15 +19,15 @@ const RankPage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // 데이터 로딩 함수
-  const loadData = useCallback(async (page) => {
+  // 데이터 공통 로드 함수
+  const loadData = useCallback(async (pageToFetch, isInitial = false) => {
     setIsLoading(true);
     try {
       const params = { size: ITEMS_PER_PAGE };
       
-      // page가 null이 아닐 때만(버튼을 눌러 페이지 이동 시만) page 파라미터 전송
-      if (page !== null) {
-        params.page = page;
+      // 최초 진입이 아닐 때만 명시적인 page 번호를 보냄
+      if (!isInitial) {
+        params.page = pageToFetch;
       }
 
       const response = await jwtAxios.get("/ranks", { params });
@@ -41,8 +40,8 @@ const RankPage = () => {
         next,
       });
 
-      // 💡 백엔드가 자동 계산해서 내려준 내 페이지 번호로 state 업데이트
-      if (page === null && responsePage) {
+      // 최초 진입 시 백엔드가 계산해 준 내 진짜 페이지 번호로 동기화
+      if (isInitial && responsePage) {
         setCurrentPage(responsePage);
       }
     } catch (error) {
@@ -52,20 +51,23 @@ const RankPage = () => {
     }
   }, []);
 
+  // 최초 마운트 시 딱 한 번만 실행 (isInitial을 true로 전달)
   useEffect(() => {
-    loadData(currentPage);
-  }, [currentPage, loadData]);
+    loadData(1, true);
+  }, [loadData]);
 
   // 이전 페이지 이동 (순환)
   const handlePrev = () => {
-    const activePage = currentPage || 1;
-    setCurrentPage(activePage <= 1 ? pageInfo.totalPage : activePage - 1);
+    const nextTarget = currentPage <= 1 ? pageInfo.totalPage : currentPage - 1;
+    setCurrentPage(nextTarget);
+    loadData(nextTarget, false);
   };
 
   // 다음 페이지 이동 (순환)
   const handleNext = () => {
-    const activePage = currentPage || 1;
-    setCurrentPage(activePage >= pageInfo.totalPage ? 1 : activePage + 1);
+    const nextTarget = currentPage >= pageInfo.totalPage ? 1 : currentPage + 1;
+    setCurrentPage(nextTarget);
+    loadData(nextTarget, false);
   };
 
   const getMedal = (rank) => {
@@ -105,7 +107,7 @@ const RankPage = () => {
               🏆 학급 주간 랭킹
             </h2>
             <span className="text-xs font-semibold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
-              {currentPage || 1} / {pageInfo.totalPage}
+              {currentPage} / {pageInfo.totalPage}
             </span>
           </div>
 
