@@ -1,4 +1,3 @@
-// QuizRepository.java
 package com.studyquest.domain.quiz.repository;
 
 import com.studyquest.domain.quiz.entity.Quiz;
@@ -17,6 +16,11 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "WHERE (:quizType IS NULL OR q.quizType = :quizType) " +
             "AND (:teacherNo IS NULL OR q.teacherNo = :teacherNo) " +
+            // 💡 1. 학생 학년과 선생님의 학년이 일치하는 조건 추가
+            "AND (:studentGrade IS NULL OR q.teacherNo IN (" +
+            "    SELECT t.teacherNo FROM Teacher t WHERE t.teacherGrade = :studentGrade" +
+            ")) " +
+            // 2. 이미 푼 퀴즈 제외 조건
             "AND (:studentNo IS NULL OR NOT EXISTS (" +
             "    SELECT 1 FROM Result r WHERE r.quiz.quizNo = q.quizNo AND r.student.studentNo = :studentNo" +
             ")) " +
@@ -29,6 +33,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("quizType") Integer quizType,
             @Param("teacherNo") Long teacherNo,
             @Param("studentNo") Long studentNo,
+            @Param("studentGrade") Integer studentGrade, // 👈 Long에서 Integer로 타입 변경
             @Param("searchType") String searchType,
             @Param("keyword") String keyword,
             Pageable pageable

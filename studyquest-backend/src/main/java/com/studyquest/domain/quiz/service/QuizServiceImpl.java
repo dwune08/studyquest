@@ -5,6 +5,8 @@ import com.studyquest.domain.quiz.entity.Choices;
 import com.studyquest.domain.quiz.entity.Quiz;
 import com.studyquest.domain.quiz.repository.ChoicesRepository;
 import com.studyquest.domain.quiz.repository.QuizRepository;
+import com.studyquest.domain.user.repository.StudentRepository;
+import com.studyquest.domain.user.repository.UserRepository;
 import com.studyquest.global.dto.PageRequestDTO;
 import com.studyquest.global.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +26,24 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
     private final ChoicesRepository choicesRepository;
+    private final StudentRepository studentRepository;
 
 
     @Override
     public PageResponseDTO<QuizDTO> getQuizList(PageRequestDTO pageRequestDTO, Integer quizType, Long teacherNo, Long studentNo) {
         Pageable pageable = pageRequestDTO.getPageable("quizNo");
 
+        // 로그인한 유저(학생)가 존재한다면 학생의 학년을 조회합니다.
+        Integer targetGrade = null;
+        if (studentNo != null) {
+            targetGrade = studentRepository.findGradeByStudentNo(studentNo);
+        }
+
         Page<Quiz> result = quizRepository.findAllWithFilters(
                 quizType,
                 teacherNo,
-                studentNo, // 👈 Repository로 전달
+                studentNo,
+                targetGrade,
                 pageRequestDTO.getSearchType(),
                 pageRequestDTO.getKeyword(),
                 pageable

@@ -21,7 +21,6 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
-    private final StatusRepository statusRepository;
 
     @Override
     public AttendanceDTO getMyAttendance(Long studentNo) {
